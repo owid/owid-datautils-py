@@ -12,7 +12,7 @@ with open(os.path.join(this_directory, "requirements.txt")) as f:
 
 setup(
     name="owid-data-utils",
-    version="0.0.0",
+    version="0.0.1.dev0",
     description="Data utils library by the Data Team at Our World in Data",
     long_description=long_description,
     long_description_content_type="text/markdown",

@@ -9,5 +9,19 @@
 pip install git+https://github.com/owid/data-utils-py
 ```
 
+
+## Development
+
+You need Python 3.8+, `poetry` and `make` installed. Clone the repo, then you can simply run:
+
+```
+# run all unit tests and CI checks
+make test
+
+# watch for changes, then run all checks
+make watch
+```
+
+
 ## Contribute
 _TODO_

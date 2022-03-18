@@ -26,7 +26,7 @@ class S3:
         self.client = self.connect(profile_name)
 
     def connect(self, profile_name: str = "default") -> S3Client:
-        "Return a connection to Walden's DigitalOcean space."
+        """Return a connection to Walden's DigitalOcean space."""
         self.check_for_default_profile(profile_name)
 
         session = boto3.Session(profile_name=profile_name)
@@ -232,42 +232,6 @@ def obj_to_s3(
 
 
 def obj_from_s3(s3_path: Union[str, list], **kwargs) -> dict:
-    s3 = S3()
-    return s3.obj_from_s3(s3_path, **kwargs)
-
-
-def dict_to_s3(
-    data: dict, s3_path: str = None, public: bool = False, **kwargs
-) -> Optional[str]:
-    """Deprecated. Use `obj_to_s3` instead"""
-    s3 = S3()
-    s3.obj_to_s3(data, s3_path, public, **kwargs)
-
-
-def str_to_s3(
-    text: str, s3_path: str = None, public: bool = False, **kwargs
-) -> Optional[str]:
-    """Deprecated. Use `obj_to_s3` instead"""
-    s3 = S3()
-    s3.obj_to_s3(text, s3_path, public, **kwargs)
-
-
-def df_to_s3(
-    df: pd.DataFrame, s3_path: str = None, public: bool = False, **kwargs
-) -> Optional[str]:
-    """Deprecated. Use `obj_to_s3` instead"""
-    s3 = S3()
-    s3.obj_to_s3(df, s3_path, public, **kwargs)
-
-
-def dict_from_s3(s3_path: Union[str, list], **kwargs) -> dict:
-    """Deprecated. Use `obj_from_s3` instead"""
-    s3 = S3()
-    return s3.obj_from_s3(s3_path, **kwargs)
-
-
-def df_from_s3(s3_path: Union[str, list], **kwargs) -> Optional[str]:
-    """Deprecated. Use `obj_from_s3` instead"""
     s3 = S3()
     return s3.obj_from_s3(s3_path, **kwargs)
 

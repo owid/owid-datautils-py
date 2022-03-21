@@ -1,13 +1,8 @@
-# type: ignore
-"""Most logic from:
-https://github.com/owid/walden/blob/master/owid/walden/owid_cache.py
-"""
-
 import os
 import json
 import tempfile
 from os import path
-from typing import Optional, Union, Tuple, Any
+from typing import Union, Tuple, Any
 from mypy_boto3_s3 import S3Client
 
 import pandas as pd
@@ -18,60 +13,55 @@ import structlog
 
 logger = structlog.get_logger()
 
+S3_OBJECT = Union[dict, str, pd.DataFrame]
+
+AWS_PROFILE = os.environ.get("AWS_PROFILE", "default")
+
 
 class S3:
-    spaces_endpoint = "https://nyc3.digitaloceanspaces.com"
 
-    def __init__(self, profile_name: str = "default") -> None:
+    SPACES_ENDPOINT = "https://nyc3.digitaloceanspaces.com"
+    S3_BASE = "s3://{bucket}.nyc3.digitaloceanspaces.com"
+    HTTPS_BASE = "https://{bucket}.nyc3.digitaloceanspaces.com"
+
+    def __init__(self, profile_name: str = AWS_PROFILE) -> None:
         self.client = self.connect(profile_name)
 
-    def connect(self, profile_name: str = "default") -> S3Client:
+    def connect(self, profile_name: str = AWS_PROFILE) -> S3Client:
         """Return a connection to Walden's DigitalOcean space."""
-        self.check_for_default_profile(profile_name)
+        check_for_aws_profile(profile_name)
 
         session = boto3.Session(profile_name=profile_name)
         client = session.client(
             service_name="s3",
-            endpoint_url=self.spaces_endpoint,
+            endpoint_url=self.SPACES_ENDPOINT,
         )
         return client
 
-    def check_for_default_profile(self, profile_name: str) -> None:
-        filename = path.expanduser("~/.aws/config")
-        if (
-            not path.exists(filename)
-            or f"[{profile_name}]" not in open(filename).read()
-        ):
-            raise FileExistsError(
-                f"""you must set up a config file at ~/.aws/config
-it should look like:
-
-[{profile_name}]
-aws_access_key_id = ...
-aws_secret_access_key = ...
-                """
-            )
-
     def upload_to_s3(
         self,
-        local_path: Union[str, list[str]],
-        s3_path: Union[str, list[str]],
+        local_path: str,
+        s3_path: str,
         public: bool = False,
-    ) -> Optional[str]:
+        quiet: bool = False,
+    ) -> str:
         """
         Upload file to Walden.
         Args:
-            local_path (Union[str, list]): Local path to file. It can be a list of paths, should match `s3_file`'s
-                                            length.
-            s3_path (Union[str, list]): File location to load object from. It can be a list of paths, should match
-                                        `local_path`'s length.
-            public (bool): Set to True to expose the file to the public (read only). Defaults to False.
+            local_path: Local path to file.
+            s3_path: File location to load object from. e.g.
+                    s3://mybucket.nyc3.digitaloceanspaces.com/myfile.csv
+                    or
+                    s3://mybucket/myfile.csv
+            public: Set to True to expose the file to the public (read only).
+
+        Returns:
+            URL of the file (`https://` if public, `s3://` if private)
         """
-        print("Uploading to S3…")
-        # Checks
-        _check_s3_local_files(local_path, s3_path)
+        if not quiet:
+            logger.info("Uploading to S3…")
         # Obtain bucket & file
-        bucket_name, s3_file = _url_to_path_and_bucket_mult(s3_path)
+        bucket_name, s3_file = s3_path_to_bucket_key(s3_path)
         # Upload
         extra_args = {"ACL": "public-read"} if public else {}
         try:
@@ -82,36 +72,46 @@ aws_secret_access_key = ...
             logger.error(e)
             raise UploadError(e)
 
-        return None
+        if not quiet:
+            logger.info("UPLOADED", s3_path=s3_path, local_path=local_path)
+
+        if public:
+            base = self.HTTPS_BASE.format(bucket=bucket_name)
+        else:
+            base = self.S3_BASE.format(bucket=bucket_name)
+        return f"{base}/{s3_file}"
 
     def download_from_s3(
         self,
-        s3_path: Union[str, list],
-        local_path: Union[str, list],
+        s3_path: str,
+        local_path: str,
         quiet: bool = False,
-    ) -> Optional[str]:
+    ) -> None:
         """Download file from S3.
 
         Args:
-            s3_path (Union[str, list]): File location to load object from.
-            local_path (Union[str, list]): Path where to save file locally.
+            s3_path: File location to load object from.
+            local_path: Path where to save file locally.
         """
-        print("Downloading from S3…")
-        # Checks
-        _check_s3_local_files(local_path, s3_path)
+        if not quiet:
+            logger.info("Downloading from S3…")
         # Obtain bucket & file
-        bucket_name, s3_file = _url_to_path_and_bucket_mult(s3_path)
+        bucket_name, s3_file = s3_path_to_bucket_key(s3_path)
         # Download
         try:
             self.client.download_file(bucket_name, s3_file, local_path)
         except ClientError as e:
             logger.error(e)
-            raise UploadError(e)
+            raise DownloadError(e)
 
         if not quiet:
             logger.info("DOWNLOADED", s3_path=s3_path, local_path=local_path)
 
-    def obj_to_s3(self, obj, s3_path, public=False, **kwargs):
+        return
+
+    def obj_to_s3(
+        self, obj: S3_OBJECT, s3_path: str, public: bool = False, **kwargs: Any
+    ) -> None:
         """Upload an object to S3, as a file.
 
         Args:
@@ -125,14 +125,14 @@ aws_secret_access_key = ...
         Raises:
             ValueError: If file format is not supported.
         """
-        with tempfile.TemporaryDirectory() as f:
-            output_path = os.path.join(f, "file")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = os.path.join(tmpdir, "file")
             if isinstance(obj, dict):
                 with open(output_path, "w") as f:
                     json.dump(obj, f)
             elif isinstance(obj, str):
-                with open(output_path, "w") as file:
-                    file.write(obj)
+                with open(output_path, "w") as f:
+                    f.write(obj)
             elif isinstance(obj, pd.DataFrame):
                 if s3_path.endswith(".csv") or s3_path.endswith(".zip"):
                     obj.to_csv(output_path, index=False, **kwargs)
@@ -150,7 +150,7 @@ aws_secret_access_key = ...
                 )
             self.upload_to_s3(local_path=output_path, s3_path=s3_path, public=public)
 
-    def obj_from_s3(self, s3_path: str, **kwargs) -> Union[dict, str, pd.DataFrame]:
+    def obj_from_s3(self, s3_path: str, **kwargs: Any) -> S3_OBJECT:
         """Load object from s3 location.
 
         Args:
@@ -159,8 +159,8 @@ aws_secret_access_key = ...
         Returns:
             object: File loaded as object. Currently JSON -> dict, CSV/XLS/XLSV -> pd.DataFrame, general -> str
         """
-        with tempfile.TemporaryDirectory() as f:
-            output_path = os.path.join(f, "file")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = os.path.join(tmpdir, "file")
             self.download_from_s3(s3_path=s3_path, local_path=output_path)
             if s3_path.endswith(".json"):
                 with open(output_path, "r") as f:
@@ -200,41 +200,37 @@ def s3_path_to_bucket_key(url: str) -> Tuple[str, str]:
     return bucket, key
 
 
-def _url_to_path_and_bucket_mult(s3_path):
-    # Obtain bucket & file
-    if isinstance(s3_path, list):
-        bucket_name = []
-        s3_file = []
-        for s in s3_path:
-            b, f = s3_path_to_bucket_key(s)
-            bucket_name.append(b)
-            s3_file.append(f)
-    else:
-        bucket_name, s3_file = s3_path_to_bucket_key(s3_path)
-    return bucket_name, s3_file
+def check_for_aws_profile(profile_name: str) -> None:
+    filename = path.expanduser("~/.aws/config")
+    if not path.exists(filename) or f"[{profile_name}]" not in open(filename).read():
+        raise FileExistsError(
+            f"""you must set up a config file at ~/.aws/config
+it should look like:
 
+[{profile_name}]
+aws_access_key_id = ...
+aws_secret_access_key = ...
+                """
+        )
 
-def _check_s3_local_files(local_file, s3_path):
-    if type(local_file) is not type(s3_path):
-        raise TypeError("`local_file` and `s3_path` should be of the same type")
-    if isinstance(local_file, list):
-        if len(local_file) == len(s3_path):
-            raise TypeError("`local_file` and `s3_path` should be of same length")
-    elif not isinstance(local_file, str):
-        raise TypeError("`local_file` and `s3_path` should be of type str or list")
+    return
 
 
 def obj_to_s3(
-    data: dict, s3_path: str = None, public: bool = False, **kwargs
-) -> Optional[str]:
+    data: S3_OBJECT, s3_path: str, public: bool = False, **kwargs: Any
+) -> None:
     s3 = S3()
-    s3.obj_to_s3(data, s3_path, public, **kwargs)
+    return s3.obj_to_s3(data, s3_path, public, **kwargs)
 
 
-def obj_from_s3(s3_path: Union[str, list], **kwargs) -> dict:
+def obj_from_s3(s3_path: str, **kwargs: Any) -> S3_OBJECT:
     s3 = S3()
     return s3.obj_from_s3(s3_path, **kwargs)
 
 
 class UploadError(Exception):
+    pass
+
+
+class DownloadError(Exception):
     pass

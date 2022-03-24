@@ -38,6 +38,40 @@ class S3:
         )
         return client
 
+    def list_files_in_folder(self, s3_path: str) -> list[str]:
+        """List files in a folder within a bucket.
+        Parameters
+        ----------
+        s3_path : str
+            Path to S3 in format s3://mybucket/path/to/folder
+        Returns
+        -------
+        objects_list : list
+            Objects found in folder.
+        """
+        if not s3_path.endswith("/"):
+            s3_path += "/"
+
+        bucket_name, s3_file = s3_path_to_bucket_key(s3_path)
+        objects_request = self.client.list_objects_v2(
+            Bucket=bucket_name, Prefix=s3_file
+        )
+
+        if objects_request["KeyCount"] == 0:
+            return []
+
+        if objects_request["KeyCount"] == objects_request["MaxKeys"]:
+            logger.warning(
+                "Too many objects to list. Consider using pagination.",
+                bucket_name=bucket_name,
+                s3_file=s3_file,
+            )
+
+        # List all objects with a prefix starting like the given path.
+        objects_list = [obj["Key"] for obj in objects_request["Contents"]]
+
+        return objects_list
+
     def upload_to_s3(
         self,
         local_path: str,

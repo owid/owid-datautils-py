@@ -2,7 +2,7 @@ import os
 import json
 import tempfile
 from os import path
-from typing import Union, Tuple, Any
+from typing import Union, Tuple, Any, List
 from mypy_boto3_s3 import S3Client
 
 import pandas as pd
@@ -38,7 +38,7 @@ class S3:
         )
         return client
 
-    def list_files_in_folder(self, s3_path: str) -> list[str]:
+    def list_files_in_folder(self, s3_path: str) -> List[str]:
         """List files in a folder within a bucket.
         Parameters
         ----------

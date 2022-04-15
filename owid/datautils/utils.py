@@ -4,12 +4,13 @@
 
 import numpy as np
 import pandas as pd
+from typing import Tuple, Union, List, Any, Dict
 
 
 class ExceptionFromDocstring(Exception):
     """Exception that returns its own docstring, if no message is explicitly given."""
 
-    def __init__(self, exception_message=None, *args):
+    def __init__(self, exception_message: Union[str, None] = None, *args: Any):
         super().__init__(exception_message or self.__doc__, *args)
 
 
@@ -22,12 +23,12 @@ class ObjectsAreNotDataframes(ExceptionFromDocstring):
 
 
 def compare_dataframes(
-    df1,
-    df2,
-    columns=None,
-    absolute_tolerance=1e-8,
-    relative_tolerance=1e-8,
-):
+    df1: pd.DataFrame,
+    df2: pd.DataFrame,
+    columns: Union[List[str], None] = None,
+    absolute_tolerance: Union[int, float] = 1e-8,
+    relative_tolerance: Union[int, float] = 1e-8,
+) -> pd.DataFrame:
     """Compare two dataframes element by element, assuming that nans are all identical, and assuming certain absolute
     and relative tolerances for the comparison of floats.
 
@@ -89,8 +90,12 @@ def compare_dataframes(
 
 
 def are_dataframes_equal(
-    df1, df2, absolute_tolerance=1e-8, relative_tolerance=1e-8, verbose=True
-):
+    df1: pd.DataFrame,
+    df2: pd.DataFrame,
+    absolute_tolerance: Union[int, float] = 1e-8,
+    relative_tolerance: Union[int, float] = 1e-8,
+    verbose: bool = True,
+) -> Tuple[bool, pd.DataFrame]:
     """Check whether two dataframes are equal, assuming that all nans are identical, and comparing floats by means of
     certain absolute and relative tolerances.
 
@@ -156,10 +161,16 @@ def are_dataframes_equal(
             are_equal = False
         for col in common_columns:
             if df1[col].dtype != df2[col].dtype:
-                summary += f"  * Column {col} is of type {df1[col].dtype} for df1, but type {df2[col].dtype} for df2."
+                summary += (
+                    f"  * Column {col} is of type {df1[col].dtype} for df1, but type"
+                    f" {df2[col].dtype} for df2."
+                )
                 are_equal = False
     else:
-        summary += f"\n* Only {len(common_columns)} common columns out of {len(all_columns)} distinct columns."
+        summary += (
+            f"\n* Only {len(common_columns)} common columns out of"
+            f" {len(all_columns)} distinct columns."
+        )
         are_equal = False
 
     if not can_be_compared:
@@ -169,7 +180,10 @@ def are_dataframes_equal(
     else:
         # Check if indexes are equal.
         if (df1.index != df2.index).any():
-            summary += "\n* Dataframes have different indexes (consider resetting indexes of input dataframes)."
+            summary += (
+                "\n* Dataframes have different indexes (consider resetting indexes of"
+                " input dataframes)."
+            )
             are_equal = False
 
         # Dataframes can be compared cell by cell.
@@ -186,8 +200,8 @@ def are_dataframes_equal(
 
     if are_equal:
         summary += (
-            f"Dataframes are identical (within absolute tolerance of {absolute_tolerance} and relative "
-            f"tolerance of {relative_tolerance})."
+            "Dataframes are identical (within absolute tolerance of"
+            f" {absolute_tolerance} and relative tolerance of {relative_tolerance})."
         )
 
     if verbose:
@@ -198,8 +212,12 @@ def are_dataframes_equal(
 
 
 def groupby_agg(
-    df, groupby_columns, aggregations=None, num_allowed_nans=0, frac_allowed_nans=None
-):
+    df: pd.DataFrame,
+    groupby_columns: Union[List[str], str],
+    aggregations: Union[Dict[str, Any], None] = None,
+    num_allowed_nans: Union[int, None] = 0,
+    frac_allowed_nans: Union[float, None] = None,
+) -> pd.DataFrame:
     """Group dataframe by certain columns, and aggregate using a certain method, and decide how to handle nans.
 
     This function is similar to the usual
@@ -277,7 +295,9 @@ def groupby_agg(
     return grouped
 
 
-def multi_merge(dfs, on, how="inner"):
+def multi_merge(
+    dfs: List[pd.DataFrame], on: Union[List[str], str], how: str = "inner"
+) -> pd.DataFrame:
     """Merge multiple dataframes.
 
     This is a helper function when merging more than two dataframes on common columns.
@@ -286,10 +306,10 @@ def multi_merge(dfs, on, how="inner"):
     ----------
     dfs : list
         Dataframes to be merged.
-    how : str
-        Method to use for merging (with the same options available in pd.merge).
     on : list or str
         Column or list of columns on which to merge. These columns must have the same name on all dataframes.
+    how : str
+        Method to use for merging (with the same options available in pd.merge).
 
     Returns
     -------

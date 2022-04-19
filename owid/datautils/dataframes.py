@@ -49,8 +49,9 @@ def compare(
     Returns
     -------
     compared : pd.DataFrame
-        Dataframe with as many rows as df1 and df2, and as many columns as specified by `columns` argument (or as many
-        common columns between df1 and df2, if `columns` is None).
+        Dataframe of booleans, with as many rows as df1 and df2, and as many columns as specified by `columns` argument
+        (or as many common columns between df1 and df2, if `columns` is None). The (i, j) element is True if df1 and f2
+        have the same value (for the given tolerances) at that same position.
 
     """
     # Ensure dataframes can be compared.

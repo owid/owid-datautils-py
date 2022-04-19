@@ -4,7 +4,7 @@
 
 import numpy as np
 import pandas as pd
-from typing import Tuple, Union, List, Any, Dict
+from typing import Tuple, Union, List, Any, Dict, Optional
 
 from owid.datautils.common import ExceptionFromDocstring
 
@@ -20,9 +20,9 @@ class ObjectsAreNotDataframes(ExceptionFromDocstring):
 def compare(
     df1: pd.DataFrame,
     df2: pd.DataFrame,
-    columns: Union[List[str], None] = None,
-    absolute_tolerance: Union[int, float] = 1e-8,
-    relative_tolerance: Union[int, float] = 1e-8,
+    columns: Optional[List[str]] = None,
+    absolute_tolerance: float = 1e-8,
+    relative_tolerance: float = 1e-8,
 ) -> pd.DataFrame:
     """Compare two dataframes element by element, assuming that nans are all identical, and assuming certain absolute
     and relative tolerances for the comparison of floats.
@@ -87,8 +87,8 @@ def compare(
 def are_equal(
     df1: pd.DataFrame,
     df2: pd.DataFrame,
-    absolute_tolerance: Union[int, float] = 1e-8,
-    relative_tolerance: Union[int, float] = 1e-8,
+    absolute_tolerance: float = 1e-8,
+    relative_tolerance: float = 1e-8,
     verbose: bool = True,
 ) -> Tuple[bool, pd.DataFrame]:
     """Check whether two dataframes are equal, assuming that all nans are identical, and comparing floats by means of

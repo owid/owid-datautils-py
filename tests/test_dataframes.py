@@ -10,7 +10,7 @@ from owid.datautils import dataframes
 
 class TestCompareDataFrames:
     def test_with_large_absolute_tolerance_all_equal(self):
-        assert dataframes.compare_dataframes(
+        assert dataframes.compare(
             df1=pd.DataFrame({"col_01": [1, 2]}),
             df2=pd.DataFrame({"col_01": [2, 3]}),
             absolute_tolerance=1,
@@ -18,7 +18,7 @@ class TestCompareDataFrames:
         ).equals(pd.DataFrame({"col_01": [True, True]}))
 
     def test_with_large_absolute_tolerance_all_unequal(self):
-        assert dataframes.compare_dataframes(
+        assert dataframes.compare(
             df1=pd.DataFrame({"col_01": [1, 2]}),
             df2=pd.DataFrame({"col_01": [2, 3]}),
             absolute_tolerance=0.9,
@@ -26,7 +26,7 @@ class TestCompareDataFrames:
         ).equals(pd.DataFrame({"col_01": [False, False]}))
 
     def test_with_large_absolute_tolerance_mixed(self):
-        assert dataframes.compare_dataframes(
+        assert dataframes.compare(
             df1=pd.DataFrame({"col_01": [1, 2]}),
             df2=pd.DataFrame({"col_01": [2, 3.1]}),
             absolute_tolerance=1,
@@ -34,7 +34,7 @@ class TestCompareDataFrames:
         ).equals(pd.DataFrame({"col_01": [True, False]}))
 
     def test_with_large_relative_tolerance_all_equal(self):
-        assert dataframes.compare_dataframes(
+        assert dataframes.compare(
             df1=pd.DataFrame({"col_01": [1, 2]}),
             df2=pd.DataFrame({"col_01": [2, 3]}),
             absolute_tolerance=1e-8,
@@ -42,7 +42,7 @@ class TestCompareDataFrames:
         ).equals(pd.DataFrame({"col_01": [True, True]}))
 
     def test_with_large_relative_tolerance_all_unequal(self):
-        assert dataframes.compare_dataframes(
+        assert dataframes.compare(
             df1=pd.DataFrame({"col_01": [1, 2]}),
             df2=pd.DataFrame({"col_01": [2, 3]}),
             absolute_tolerance=1e-8,
@@ -50,7 +50,7 @@ class TestCompareDataFrames:
         ).equals(pd.DataFrame({"col_01": [False, False]}))
 
     def test_with_large_relative_tolerance_mixed(self):
-        assert dataframes.compare_dataframes(
+        assert dataframes.compare(
             df1=pd.DataFrame({"col_01": [1, 2]}),
             df2=pd.DataFrame({"col_01": [2, 3]}),
             absolute_tolerance=1e-8,
@@ -60,7 +60,7 @@ class TestCompareDataFrames:
     def test_with_dataframes_of_equal_values_but_different_indexes(self):
         # Even if dataframes are not identical, compare_dataframes should return all Trues (since it does not care about
         # indexes, only values).
-        assert dataframes.compare_dataframes(
+        assert dataframes.compare(
             df1=pd.DataFrame({"col_01": [1, 2], "col_02": ["a", "b"]}).set_index(
                 "col_02"
             ),
@@ -70,7 +70,7 @@ class TestCompareDataFrames:
         ).equals(pd.DataFrame({"col_01": [True, True]}))
 
     def test_with_two_dataframes_with_object_columns_with_nans(self):
-        assert dataframes.compare_dataframes(
+        assert dataframes.compare(
             df1=pd.DataFrame({"col_01": [np.nan, "b", "c"]}),
             df2=pd.DataFrame({"col_01": [np.nan, "b", "c"]}),
         ).equals(pd.DataFrame({"col_01": [True, True, True]}))
@@ -78,42 +78,40 @@ class TestCompareDataFrames:
 
 class TestAreDataFramesEqual:
     def test_on_equal_dataframes_with_one_integer_column(self):
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=pd.DataFrame({"col_01": [1, 2, 3]}),
             df2=pd.DataFrame({"col_01": [1, 2, 3]}),
         )[0]
 
     def test_on_almost_equal_dataframes_but_differing_by_one_element(self):
-        assert not dataframes.are_dataframes_equal(
+        assert not dataframes.are_equal(
             df1=pd.DataFrame({"col_01": [1, 2, 3]}),
             df2=pd.DataFrame({"col_01": [1, 2, 0]}),
         )[0]
 
     def test_on_almost_equal_dataframes_but_differing_by_type(self):
-        assert not dataframes.are_dataframes_equal(
+        assert not dataframes.are_equal(
             df1=pd.DataFrame({"col_01": [1, 2, 3]}),
             df2=pd.DataFrame({"col_01": [1, 2, 3.0]}),
         )[0]
 
     def test_on_equal_dataframes_containing_nans(self):
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=pd.DataFrame({"col_01": [1, 2, np.nan]}),
             df2=pd.DataFrame({"col_01": [1, 2, np.nan]}),
         )[0]
 
     def test_on_equal_dataframes_containing_only_nans(self):
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=pd.DataFrame({"col_01": [np.nan, np.nan]}),
             df2=pd.DataFrame({"col_01": [np.nan, np.nan]}),
         )[0]
 
     def test_on_equal_dataframes_both_empty(self):
-        assert dataframes.are_dataframes_equal(df1=pd.DataFrame(), df2=pd.DataFrame())[
-            0
-        ]
+        assert dataframes.are_equal(df1=pd.DataFrame(), df2=pd.DataFrame())[0]
 
     def test_on_equal_dataframes_with_various_types_of_columns(self):
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=pd.DataFrame(
                 {
                     "col_01": [1, 2],
@@ -133,7 +131,7 @@ class TestAreDataFramesEqual:
         )[0]
 
     def test_on_almost_equal_dataframes_but_columns_sorted_differently(self):
-        assert not dataframes.are_dataframes_equal(
+        assert not dataframes.are_equal(
             df1=pd.DataFrame(
                 {
                     "col_01": [1, 2],
@@ -153,19 +151,19 @@ class TestAreDataFramesEqual:
         )[0]
 
     def test_on_unequal_dataframes_with_all_columns_different(self):
-        assert not dataframes.are_dataframes_equal(
+        assert not dataframes.are_equal(
             df1=pd.DataFrame({"col_01": [1, 2], "col_02": [0.1, 0.2]}),
             df2=pd.DataFrame({"col_03": [0.1, 0.2], "col_04": [1, 2]}),
         )[0]
 
     def test_on_unequal_dataframes_with_some_common_columns(self):
-        assert not dataframes.are_dataframes_equal(
+        assert not dataframes.are_equal(
             df1=pd.DataFrame({"col_01": [1, 2], "col_02": [0.1, 0.2]}),
             df2=pd.DataFrame({"col_01": [1, 2], "col_03": [1, 2]}),
         )[0]
 
     def test_on_equal_dataframes_given_large_absolute_tolerance(self):
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=pd.DataFrame({"col_01": [10, 20]}),
             df2=pd.DataFrame({"col_01": [11, 21]}),
             absolute_tolerance=1,
@@ -173,7 +171,7 @@ class TestAreDataFramesEqual:
         )[0]
 
     def test_on_unequal_dataframes_given_large_absolute_tolerance(self):
-        assert not dataframes.are_dataframes_equal(
+        assert not dataframes.are_equal(
             df1=pd.DataFrame({"col_01": [10, 20]}),
             df2=pd.DataFrame({"col_01": [11, 21]}),
             absolute_tolerance=0.9,
@@ -181,7 +179,7 @@ class TestAreDataFramesEqual:
         )[0]
 
     def test_on_equal_dataframes_given_large_relative_tolerance(self):
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=pd.DataFrame({"col_01": [1]}),
             df2=pd.DataFrame({"col_01": [2]}),
             absolute_tolerance=1e-8,
@@ -189,7 +187,7 @@ class TestAreDataFramesEqual:
         )[0]
 
     def test_on_unequal_dataframes_given_large_relative_tolerance(self):
-        assert not dataframes.are_dataframes_equal(
+        assert not dataframes.are_equal(
             df1=pd.DataFrame({"col_01": [1]}),
             df2=pd.DataFrame({"col_01": [2]}),
             absolute_tolerance=1e-8,
@@ -197,7 +195,7 @@ class TestAreDataFramesEqual:
         )[0]
 
     def test_on_equal_dataframes_with_non_numeric_indexes(self):
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=pd.DataFrame({"col_01": [1, 2], "col_02": ["a", "b"]}).set_index(
                 "col_02"
             ),
@@ -207,7 +205,7 @@ class TestAreDataFramesEqual:
         )[0]
 
     def test_on_dataframes_of_equal_values_but_different_indexes(self):
-        assert not dataframes.are_dataframes_equal(
+        assert not dataframes.are_equal(
             df1=pd.DataFrame({"col_01": [1, 2], "col_02": ["a", "b"]}).set_index(
                 "col_02"
             ),
@@ -217,7 +215,7 @@ class TestAreDataFramesEqual:
         )[0]
 
     def test_on_dataframes_with_object_columns_with_nans(self):
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=pd.DataFrame({"col_01": [np.nan, "b", "c"]}),
             df2=pd.DataFrame({"col_01": [np.nan, "b", "c"]}),
         )[0]
@@ -359,7 +357,7 @@ class TestGroupbyAggregate:
         df_out["value_03"] = pd.Series(
             [np.nan, 0, np.nan], index=[2001, 2002, 2003], dtype=object
         )
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=dataframes.groupby_agg(
                 df_in,
                 ["year"],
@@ -389,7 +387,7 @@ class TestGroupbyAggregate:
         df_out["value_03"] = pd.Series(
             [0, 0, np.nan], index=[2001, 2002, 2003], dtype=object
         )
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=dataframes.groupby_agg(
                 df_in,
                 ["year"],
@@ -419,7 +417,7 @@ class TestGroupbyAggregate:
         df_out["value_03"] = pd.Series(
             [0, 0, 1], index=[2001, 2002, 2003], dtype=object
         )
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=dataframes.groupby_agg(
                 df_in,
                 ["year"],
@@ -449,7 +447,7 @@ class TestGroupbyAggregate:
         df_out["value_03"] = pd.Series(
             [0, 0, 1], index=[2001, 2002, 2004], dtype=object
         )
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=dataframes.groupby_agg(
                 df_in,
                 ["year"],
@@ -479,7 +477,7 @@ class TestGroupbyAggregate:
         df_out["value_03"] = pd.Series(
             [np.nan, 0, np.nan], index=[2001, 2002, 2003], dtype=object
         )
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=dataframes.groupby_agg(
                 df_in,
                 ["year"],
@@ -509,7 +507,7 @@ class TestGroupbyAggregate:
         df_out["value_03"] = pd.Series(
             [np.nan, 0, np.nan], index=[2001, 2002, 2003], dtype=object
         )
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=dataframes.groupby_agg(
                 df_in,
                 ["year"],
@@ -539,7 +537,7 @@ class TestGroupbyAggregate:
         df_out["value_03"] = pd.Series(
             [np.nan, 0, 1], index=[2001, 2002, 2003], dtype=object
         )
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=dataframes.groupby_agg(
                 df_in,
                 ["year"],
@@ -580,7 +578,7 @@ class TestGroupbyAggregate:
         df_out["value_03"] = pd.Series(
             [0, 0, 1, 1], index=[2001, 2002, 2003, 2004], dtype=object
         )
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=dataframes.groupby_agg(
                 df_in,
                 ["year"],
@@ -621,7 +619,7 @@ class TestGroupbyAggregate:
         df_out["value_03"] = pd.Series(
             [np.nan, 0, np.nan, np.nan], index=[2001, 2002, 2003, 2004], dtype=object
         )
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=dataframes.groupby_agg(
                 df_in,
                 ["year"],
@@ -654,7 +652,7 @@ class TestGroupbyAggregate:
                 "value_01": [1, 5, 9, 6],
             }
         ).set_index(["country", "year"])
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=dataframes.groupby_agg(
                 df_in,
                 ["country", "year"],
@@ -681,7 +679,7 @@ class TestGroupbyAggregate:
                 "value_02": [1, 2.5, 7.5],
             }
         ).set_index("year")
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=dataframes.groupby_agg(
                 df_in,
                 ["year"],
@@ -710,7 +708,7 @@ class TestMultiMerge:
         df3 = pd.DataFrame({"col_01": ["af"], "col_03": ["ca"]})
         # For some reason the order of columns changes on the second merge.
         df_out = pd.DataFrame({"col_02": [], "col_01": [], "col_03": []}, dtype=str)
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=dataframes.multi_merge([df1, df2, df3], how="inner", on="col_01"),
             df2=df_out,
         )
@@ -725,7 +723,7 @@ class TestMultiMerge:
                 "col_02": ["ba", "bb", "bc", np.nan, np.nan],
             }
         )
-        assert dataframes.are_dataframes_equal(
+        assert dataframes.are_equal(
             df1=dataframes.multi_merge([df1, df2, df3], how="outer", on="col_01"),
             df2=df_out,
         )[0]

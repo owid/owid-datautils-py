@@ -17,7 +17,7 @@ class ObjectsAreNotDataframes(ExceptionFromDocstring):
     """Given objects are not dataframes."""
 
 
-def compare_dataframes(
+def compare(
     df1: pd.DataFrame,
     df2: pd.DataFrame,
     columns: Union[List[str], None] = None,
@@ -84,7 +84,7 @@ def compare_dataframes(
     return compared
 
 
-def are_dataframes_equal(
+def are_equal(
     df1: pd.DataFrame,
     df2: pd.DataFrame,
     absolute_tolerance: Union[int, float] = 1e-8,
@@ -121,7 +121,7 @@ def are_dataframes_equal(
 
     """
     # Initialise flag that is True only if both dataframes are equal.
-    are_equal = True
+    equal = True
     # Initialise flag that is True if dataframes can be compared cell by cell.
     can_be_compared = True
     # Initialise string of messages, which will optionally be printed.
@@ -132,19 +132,19 @@ def are_dataframes_equal(
     if len(missing_in_df1):
         summary += f"\n* {len(missing_in_df1)} columns in df2 missing in df1.\n"
         summary += "\n".join([f"  * {col}" for col in missing_in_df1])
-        are_equal = False
+        equal = False
 
     # Check if all columns in df1 are in df2.
     missing_in_df2 = sorted(set(df1.columns) - set(df2.columns))
     if len(missing_in_df2):
         summary += f"\n* {len(missing_in_df2)} columns in df1 missing in df2.\n"
         summary += "\n".join([f"  * {col}" for col in missing_in_df2])
-        are_equal = False
+        equal = False
 
     # Check if dataframes have the same number of rows.
     if len(df1) != len(df2):
         summary += f"\n* {len(df1)} rows in df1 and {len(df2)} rows in df2."
-        are_equal = False
+        equal = False
         can_be_compared = False
 
     # Check for differences in column names or types.
@@ -153,25 +153,25 @@ def are_dataframes_equal(
     if common_columns == all_columns:
         if df1.columns.tolist() != df2.columns.tolist():
             summary += "\n* Columns are sorted differently.\n"
-            are_equal = False
+            equal = False
         for col in common_columns:
             if df1[col].dtype != df2[col].dtype:
                 summary += (
                     f"  * Column {col} is of type {df1[col].dtype} for df1, but type"
                     f" {df2[col].dtype} for df2."
                 )
-                are_equal = False
+                equal = False
     else:
         summary += (
             f"\n* Only {len(common_columns)} common columns out of"
             f" {len(all_columns)} distinct columns."
         )
-        are_equal = False
+        equal = False
 
     if not can_be_compared:
         # Dataframes cannot be compared.
         compared = pd.DataFrame()
-        are_equal = False
+        equal = False
     else:
         # Check if indexes are equal.
         if (df1.index != df2.index).any():
@@ -179,10 +179,10 @@ def are_dataframes_equal(
                 "\n* Dataframes have different indexes (consider resetting indexes of"
                 " input dataframes)."
             )
-            are_equal = False
+            equal = False
 
         # Dataframes can be compared cell by cell.
-        compared = compare_dataframes(
+        compared = compare(
             df1,
             df2,
             columns=common_columns,
@@ -191,9 +191,9 @@ def are_dataframes_equal(
         )
         # Dataframes are equal only if all previous checks have passed and cells are identical
         # Two nans are considered identical.
-        are_equal = are_equal & compared.all().all()
+        equal = equal & compared.all().all()
 
-    if are_equal:
+    if equal:
         summary += (
             "Dataframes are identical (within absolute tolerance of"
             f" {absolute_tolerance} and relative tolerance of {relative_tolerance})."
@@ -203,7 +203,7 @@ def are_dataframes_equal(
         # Optionally print the summary of the comparison.
         print(summary)
 
-    return are_equal, compared
+    return equal, compared
 
 
 def groupby_agg(

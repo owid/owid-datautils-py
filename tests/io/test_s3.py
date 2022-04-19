@@ -1,6 +1,6 @@
 # type: ignore
 from unittest import mock
-from owid.datautils import s3
+from owid.datautils.io import s3
 
 
 def test_s3_path_to_bucket_key():

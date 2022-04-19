@@ -181,7 +181,7 @@ def are_equal(
             )
             equal = False
 
-        # Dataframes can be compared cell by cell.
+        # Dataframes can be compared cell by cell (two nans on the same cell are considered equal).
         compared = compare(
             df1,
             df2,
@@ -189,9 +189,12 @@ def are_equal(
             absolute_tolerance=absolute_tolerance,
             relative_tolerance=relative_tolerance,
         )
-        # Dataframes are equal only if all previous checks have passed and cells are identical
-        # Two nans are considered identical.
-        equal = equal & compared.all().all()
+        all_values_equal = compared.all().all()
+        if not all_values_equal:
+            summary += "\n* Values differ by more than the given absolute and relative tolerances."
+
+        # Dataframes are equal only if all previous checks have passed.
+        equal = equal & all_values_equal
 
     if equal:
         summary += (

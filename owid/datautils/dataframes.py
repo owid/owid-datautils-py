@@ -1,4 +1,4 @@
-"""Generic useful functions and classes.
+"""Objects related to pandas dataframes.
 
 """
 
@@ -6,12 +6,7 @@ import numpy as np
 import pandas as pd
 from typing import Tuple, Union, List, Any, Dict
 
-
-class ExceptionFromDocstring(Exception):
-    """Exception that returns its own docstring, if no message is explicitly given."""
-
-    def __init__(self, exception_message: Union[str, None] = None, *args: Any):
-        super().__init__(exception_message or self.__doc__, *args)
+from owid.datautils.common import ExceptionFromDocstring
 
 
 class DataFramesHaveDifferentLengths(ExceptionFromDocstring):

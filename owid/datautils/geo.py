@@ -4,7 +4,7 @@
 
 import json
 import warnings
-from typing import List, Union, Set, Optional, Dict, Any
+from typing import List, Union, Set, Optional, Dict, Any, cast
 
 import numpy as np
 import pandas as pd
@@ -33,17 +33,17 @@ def _load_population() -> pd.DataFrame:
         catalog.find("population", namespace="owid", dataset="key_indicators")
         .load()
         .reset_index()
-    )  # type: pd.DataFrame
+    )
 
-    return population
+    return cast(pd.DataFrame, population)
 
 
 def _load_countries_regions() -> pd.DataFrame:
     countries_regions = catalog.find(
         "countries_regions", dataset="reference", namespace="owid"
-    ).load()  # type: pd.DataFrame
+    ).load()
 
-    return countries_regions
+    return cast(pd.DataFrame, countries_regions)
 
 
 def _load_income_groups() -> pd.DataFrame:
@@ -54,9 +54,9 @@ def _load_income_groups() -> pd.DataFrame:
         income_groups_found[income_groups_found.path.str.startswith("garden")]
         .load()
         .reset_index()
-    )  # type: pd.DataFrame
+    )
 
-    return income_groups
+    return cast(pd.DataFrame, income_groups)
 
 
 def _warn_on_list_of_entities(

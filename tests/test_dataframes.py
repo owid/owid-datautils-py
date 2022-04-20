@@ -1,4 +1,4 @@
-"""Test functions in scripts.dataframes module.
+"""Test functions in owid.datautils.dataframes module.
 
 """
 

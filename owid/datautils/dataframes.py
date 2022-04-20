@@ -2,9 +2,10 @@
 
 """
 
+from typing import Tuple, Union, List, Any, Dict, Optional
+
 import numpy as np
 import pandas as pd
-from typing import Tuple, Union, List, Any, Dict, Optional
 
 from owid.datautils.common import ExceptionFromDocstring
 
@@ -79,7 +80,7 @@ def compare(
                 rtol=relative_tolerance,
             )
         # Treat nans as equal.
-        compared_row[pd.isnull(df1[col].values) & pd.isnull(df2[col].values)] = True
+        compared_row[pd.isnull(df1[col].values) & pd.isnull(df2[col].values)] = True  # type: ignore
         compared[col] = compared_row
 
     return compared

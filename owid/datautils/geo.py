@@ -242,9 +242,10 @@ def add_region_aggregates(
     countries_that_must_have_data: Optional[List[str]] = None,
     num_allowed_nans_per_year: Union[int, None] = NUM_ALLOWED_NANS_PER_YEAR,
     frac_allowed_nans_per_year: Union[float, None] = FRAC_ALLOWED_NANS_PER_YEAR,
-    country_col: str = "Country",
-    year_col: str = "Year",
+    country_col: str = "country",
+    year_col: str = "year",
     aggregations: Optional[Dict[str, Any]] = None,
+    keep_original_region_with_suffix: Optional[str] = None,
 ) -> pd.DataFrame:
     """Add data for regions (e.g. income groups or continents) to a dataset, or replace it, if the dataset already
     contains data for that region.
@@ -291,6 +292,9 @@ def add_region_aggregates(
         Aggregations to execute for each variable. If None, the contribution to each variable from each country in the
         region will be summed. Otherwise, only the variables indicated in the dictionary will be affected. All remaining
         variables will be nan.
+    keep_original_region_with_suffix : str or None
+        If None, data for original region will be replaced by aggregate data constructed by this function. If not None,
+        original data for region will be kept; then, keep_original_region_with_suffix  it must be a name to add at the end of the
 
     Returns
     -------
@@ -325,9 +329,8 @@ def add_region_aggregates(
     # Select data for countries in the region.
     df_countries = df[df[country_col].isin(countries_in_region)]
     for variable in variables:
-        df_clean = df_countries.dropna(subset=variable).reset_index(drop=True)
         df_added = groupby_agg(
-            df=df_clean,
+            df=df_countries,
             groupby_columns=year_col,
             aggregations={
                 country_col: lambda x: set(countries_that_must_have_data).issubset(
@@ -347,10 +350,21 @@ def add_region_aggregates(
             df_region, df_added, on=[country_col, year_col], how="outer"
         )
 
-    # Remove rows in the original dataframe containing rows for region, and append new rows for region.
-    df_updated = pd.concat(
-        [df[~(df[country_col] == region)], df_region], ignore_index=True
-    )
+    if type(keep_original_region_with_suffix) == str:
+        # Keep rows in the original dataframe containing rows for region (adding a suffix to the region name), and then
+        # append new rows for region.
+        rows_original_region = df[country_col] == region
+        df_original_region = df[rows_original_region].reset_index(drop=True)
+        # Append suffix at the end of the name of the original region.
+        df_original_region[country_col] = region + keep_original_region_with_suffix
+        df_updated = pd.concat(
+            [df[~rows_original_region], df_original_region, df_region], ignore_index=True
+        )
+    else:
+        # Remove rows in the original dataframe containing rows for region, and append new rows for region.
+        df_updated = pd.concat(
+            [df[~(df[country_col] == region)], df_region], ignore_index=True
+        )
 
     # Sort conveniently.
     df_updated = df_updated.sort_values([country_col, year_col]).reset_index(drop=True)

@@ -358,7 +358,8 @@ def add_region_aggregates(
         # Append suffix at the end of the name of the original region.
         df_original_region[country_col] = region + keep_original_region_with_suffix
         df_updated = pd.concat(
-            [df[~rows_original_region], df_original_region, df_region], ignore_index=True
+            [df[~rows_original_region], df_original_region, df_region],
+            ignore_index=True,
         )
     else:
         # Remove rows in the original dataframe containing rows for region, and append new rows for region.

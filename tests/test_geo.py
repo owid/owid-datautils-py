@@ -481,7 +481,7 @@ class TestAddRegionAggregates:
                     "Income group 1",
                     "Income group 2",
                     "Income group 2",
-                    "Region 1"
+                    "Region 1",
                 ],
                 "year": [2020, 2021, 2020, 2022, 2022, 2020, 2021, 2022],
                 "var_01": [1, 2, 3, np.nan, 6, 1, 2, 5],

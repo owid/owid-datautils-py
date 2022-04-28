@@ -175,12 +175,13 @@ class TestStandardizeCountries:
             {"country": ["Country 1", "country_04"], "some_variable": [1, 2]}
         )
         df_out = pd.DataFrame({"country": [np.nan, np.nan], "some_variable": [1, 2]})
+        df_out["country"] = df_out["country"].astype(object)
         assert dataframes.are_equal(
             df1=df_out,
             df2=geo.harmonize_countries(
                 df=df_in, countries_file="IGNORED", make_missing_countries_nan=True
             ),
-        )
+        )[0]
 
     def test_one_unknown_country_made_nan_and_a_known_country_changed(self, _):
         df_in = pd.DataFrame(
@@ -194,29 +195,7 @@ class TestStandardizeCountries:
             df2=geo.harmonize_countries(
                 df=df_in, countries_file="IGNORED", make_missing_countries_nan=True
             ),
-        )
-
-    def test_one_unknown_country_made_nan_a_known_country_changed_and_another_unchanged(
-        self, _
-    ):
-        df_in = pd.DataFrame(
-            {
-                "country": ["Country 1", "country_02", "Country 3"],
-                "some_variable": [1, 2, 3],
-            }
-        )
-        df_out = pd.DataFrame(
-            {
-                "country": [np.nan, "Country 2", "Country 3"],
-                "some_variable": [1, 2, 3],
-            }
-        )
-        assert dataframes.are_equal(
-            df1=df_out,
-            df2=geo.harmonize_countries(
-                df=df_in, countries_file="IGNORED", make_missing_countries_nan=True
-            ),
-        )
+        )[0]
 
     def test_on_dataframe_with_no_countries(self, _):
         df_in = pd.DataFrame({"country": []})
@@ -224,7 +203,7 @@ class TestStandardizeCountries:
         assert dataframes.are_equal(
             df1=df_out,
             df2=geo.harmonize_countries(df=df_in, countries_file="IGNORED"),
-        )
+        )[0]
 
     def test_change_country_column_name(self, _):
         df_in = pd.DataFrame({"Country": ["country_02"]})
@@ -234,7 +213,7 @@ class TestStandardizeCountries:
             df2=geo.harmonize_countries(
                 df=df_in, countries_file="IGNORED", country_col="Country"
             ),
-        )
+        )[0]
 
 
 class TestListCountriesInRegions(unittest.TestCase):
@@ -432,6 +411,7 @@ class TestAddRegionAggregates:
             countries_in_region=["Country 3"],
             countries_that_must_have_data=["Country 3"],
             num_allowed_nans_per_year=None,
+            frac_allowed_nans_per_year=None,
             country_col="country",
             year_col="year",
         )
@@ -442,16 +422,16 @@ class TestAddRegionAggregates:
                     "Country 1",
                     "Country 2",
                     "Country 3",
-                    "Region 1",
                     "Income group 1",
+                    "Region 1",
                     "Region 2",
                 ],
                 "year": [2020, 2021, 2020, 2022, 2022, 2022, 2022],
-                "var_01": [1, 2, 3, np.nan, 5, 6, 0.0],
-                "var_02": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 40.0],
+                "var_01": [1, 2, 3, np.nan, 6, 5, 0.0],
+                "var_02": [10.0, 20.0, 30.0, 40.0, 60.0, 50.0, 40.0],
             }
         )
-        assert dataframes.are_equal(df1=df, df2=df_out)
+        assert dataframes.are_equal(df1=df, df2=df_out)[0]
 
     def test_add_region_with_one_nan_not_permitted(self):
         df = geo.add_region_aggregates(
@@ -470,16 +450,16 @@ class TestAddRegionAggregates:
                     "Country 1",
                     "Country 2",
                     "Country 3",
-                    "Region 1",
                     "Income group 1",
+                    "Region 1",
                     "Region 2",
                 ],
                 "year": [2020, 2021, 2020, 2022, 2022, 2022, 2022],
-                "var_01": [1, 2, 3, np.nan, 5, 6, np.nan],
-                "var_02": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 40.0],
+                "var_01": [1, 2, 3, np.nan, 6, 5, np.nan],
+                "var_02": [10.0, 20.0, 30.0, 40.0, 60.0, 50.0, 40.0],
             }
         )
-        assert dataframes.are_equal(df1=df, df2=df_out)
+        assert dataframes.are_equal(df1=df, df2=df_out)[0]
 
     def test_add_income_group(self):
         df = geo.add_region_aggregates(
@@ -498,17 +478,17 @@ class TestAddRegionAggregates:
                     "Country 1",
                     "Country 2",
                     "Country 3",
-                    "Region 1",
                     "Income group 1",
                     "Income group 2",
                     "Income group 2",
+                    "Region 1"
                 ],
-                "year": [2020, 2021, 2020, 2022, 2022, 2022, 2020, 2021],
-                "var_01": [1, 2, 3, np.nan, 5, 6, 1, 2],
-                "var_02": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 10.0, 20.0],
+                "year": [2020, 2021, 2020, 2022, 2022, 2020, 2021, 2022],
+                "var_01": [1, 2, 3, np.nan, 6, 1, 2, 5],
+                "var_02": [10.0, 20.0, 30.0, 40.0, 60.0, 10.0, 20.0, 50.0],
             }
         )
-        assert dataframes.are_equal(df1=df, df2=df_out)
+        assert dataframes.are_equal(df1=df, df2=df_out)[0]
 
     def test_replace_region_with_one_non_mandatory_country_missing(self):
         # Country 2 does not have data for 2021, however, since it is not a mandatory country, its data will be treated
@@ -616,14 +596,44 @@ class TestAddRegionAggregates:
                     "Country 1",
                     "Country 2",
                     "Country 3",
-                    "Region 1",
                     "Income group 1",
                     "Income group 2",
                     "Income group 2",
+                    "Region 1",
                 ],
-                "year": [2020, 2021, 2020, 2022, 2022, 2022, 2020, 2021],
-                "var_01": [1, 2, 3, np.nan, 5, 6, 1, 2],
-                "var_02": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 10.0, 20.0],
+                "year": [2020, 2021, 2020, 2022, 2022, 2020, 2021, 2022],
+                "var_01": [1, 2, 3, np.nan, 6, 1, 2, 5],
+                "var_02": [10.0, 20.0, 30.0, 40.0, 60.0, 10.0, 20.0, 50.0],
             }
         )
-        assert dataframes.are_equal(df1=df, df2=df_out)
+        assert dataframes.are_equal(df1=df, df2=df_out)[0]
+
+    def test_add_region_without_replacing_original(self):
+        df = geo.add_region_aggregates(
+            df=self.df_in,
+            region="Region 1",
+            countries_in_region=["Country 1", "Country 2"],
+            countries_that_must_have_data=["Country 1"],
+            num_allowed_nans_per_year=0,
+            country_col="country",
+            year_col="year",
+            keep_original_region_with_suffix=" (TEST)",
+        )
+        df_out = pd.DataFrame(
+            {
+                "country": [
+                    "Country 1",
+                    "Country 1",
+                    "Country 2",
+                    "Country 3",
+                    "Income group 1",
+                    "Region 1",
+                    "Region 1",
+                    "Region 1 (TEST)",
+                ],
+                "year": [2020, 2021, 2020, 2022, 2022, 2020, 2021, 2022],
+                "var_01": [1, 2, 3, np.nan, 6, 4, 2, 5],
+                "var_02": [10.0, 20.0, 30.0, 40.0, 60.0, 40.0, 20.0, 50.0],
+            }
+        )
+        assert dataframes.are_equal(df1=df, df2=df_out)[0]

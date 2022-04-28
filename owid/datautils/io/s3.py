@@ -198,11 +198,11 @@ class S3:
             self.download_from_s3(s3_path=s3_path, local_path=output_path)
             if s3_path.endswith(".json"):
                 with open(output_path, "r") as f:
-                    return json.load(f)
+                    return json.load(f)  # type: ignore
             elif s3_path.endswith(".csv"):
-                return pd.read_csv(output_path, **kwargs)
+                return pd.read_csv(output_path, **kwargs)  # type: ignore
             elif s3_path.endswith(".xls") or s3_path.endswith(".xlsx"):
-                return pd.read_excel(output_path, **kwargs)
+                return pd.read_excel(output_path, **kwargs)  # type: ignore
             else:
                 with open(output_path, "r") as f:
                     return f.read()

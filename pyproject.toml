@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "owid-datautils"
-version = "0.2.1"
+version = "0.3.0"
 description = "Data utils library by the Data Team at Our World in Data"
 authors = ["Our World In Data <tech@ourworldindata.org>"]
 license = "MIT"
@@ -18,16 +18,19 @@ boto3 = "^1.21.16"
 structlog = "^21.5.0"
 colorama = "^0.4.4"
 mypy-boto3-s3 = "^1.21.23"
+owid-catalog = "^0.2.6"
+
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
-pytest-cov = "^3.0.0"
+pytest-cov = "^2.12.1"
 black = "^22.3"
 mypy = "^0.910"
 flake8 = "^3.9.2"
 watchdog = "^2.1.5"
 boto3-stubs = {extras = ["s3"], version = "^1.21.16"}
 ipdb = "^0.13.9"
+ipykernel = "^6.13.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

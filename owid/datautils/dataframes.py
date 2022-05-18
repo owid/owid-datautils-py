@@ -2,6 +2,7 @@
 
 """
 
+import warnings
 from typing import Tuple, Union, List, Any, Dict, Optional
 
 import numpy as np
@@ -322,3 +323,50 @@ def multi_merge(
         merged = pd.merge(merged, df, how=how, on=on)
 
     return merged
+
+
+def map_series(series: pd.Series, mapping: Dict[Any, Any], make_unmapped_values_nan: bool = False,
+               warn_on_unused_mappings: bool = False) -> pd.Series:
+    """Map values of a series given a certain mapping.
+
+    This function does almost the same as
+    > series.map(mapping)
+    However, map() translates values into nan if those values are not in the mapping, whereas this function allows to
+    optionally keep the original values.
+
+    This function should do the same as
+    > series.replace(mapping)
+    However .replace() becomes very slow on big dataframes.
+
+    Parameters
+    ----------
+    series : pd.Series
+        Original series to be mapped.
+    mapping : dict
+        Mapping.
+    make_unmapped_values_nan : bool
+        If true, values in the series that are not in the mapping will be translated into nan; otherwise, they will keep
+        their original values.
+    warn_on_unused_mappings : bool
+        True to warn if the mapping contains values that are not present in the series. False to ignore.
+
+    Returns
+    -------
+    series_mapped : pd.Series
+        Mapped series.
+
+    """
+    # Translate values in series following the mapping.
+    series_mapped = series.map(mapping)
+    if not make_unmapped_values_nan:
+        # Rows that had values that were not in the mapping are now nan.
+        missing = series_mapped.isnull()
+        # Replace those nans with their original values.
+        series_mapped.loc[missing] = series[missing]
+
+    if warn_on_unused_mappings:
+        unused = set(mapping) - set(series)
+        if len(unused) > 0:
+            warnings.warn(f"{len(unused)} unused values in mapping.")
+
+    return series_mapped

@@ -2,7 +2,6 @@
 
 """
 
-import warnings
 from typing import Tuple, Union, List, Any, Dict, Optional
 
 import numpy as np
@@ -326,6 +325,7 @@ def multi_merge(
 
 
 def map_series(series: pd.Series, mapping: Dict[Any, Any], make_unmapped_values_nan: bool = False,
+               warn_on_missing_mappings: bool = False,
                warn_on_unused_mappings: bool = False, show_full_warning: bool = False) -> pd.Series:
     """Map values of a series given a certain mapping.
 
@@ -365,6 +365,12 @@ def map_series(series: pd.Series, mapping: Dict[Any, Any], make_unmapped_values_
         missing = series_mapped.isnull()
         # Replace those nans with their original values.
         series_mapped.loc[missing] = series[missing]
+
+    if warn_on_missing_mappings:
+        unmapped = set(series) - set(mapping)
+        if len(unmapped) > 0:
+            warn_on_list_of_entities(unmapped, f"{len(unmapped)} missing values in mapping.",
+                                     show_list=show_full_warning)
 
     if warn_on_unused_mappings:
         unused = set(mapping) - set(series)

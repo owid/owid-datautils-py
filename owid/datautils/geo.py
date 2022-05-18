@@ -413,21 +413,10 @@ def harmonize_countries(
     # Countries in dataframe that are not among countries, will be left unchanged.
     df_harmonized = df.copy()
     df_harmonized[country_col] = map_series(
-        series=df[country_col], mapping=countries, warn_on_unused_mappings=warn_on_unused_countries,
+        series=df[country_col], mapping=countries, make_unmapped_values_nan=make_missing_countries_nan,
+        warn_on_missing_mappings=warn_on_missing_countries,
+        warn_on_unused_mappings=warn_on_unused_countries,
         show_full_warning=show_full_warning)
-
-    # Decide what to do with missing countries.
-    if len(missing_countries) > 0:
-        if warn_on_missing_countries:
-            warn_on_list_of_entities(
-                list_of_entities=missing_countries,
-                warning_message=f"{len(missing_countries)} entities in dataframe missing in countries file.",
-                show_list=show_full_warning,
-            )
-        if make_missing_countries_nan:
-            df_harmonized.loc[
-                df_harmonized[country_col].isin(missing_countries), country_col
-            ] = np.nan
 
     return df_harmonized
 

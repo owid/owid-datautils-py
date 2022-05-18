@@ -370,8 +370,9 @@ def map_series(
     if not make_unmapped_values_nan:
         # Rows that had values that were not in the mapping are now nan.
         missing = series_mapped.isnull()
-        # Replace those nans with their original values.
-        series_mapped.loc[missing] = series[missing]
+        if missing.any():
+            # Replace those nans with their original values.
+            series_mapped.loc[missing] = series[missing]
 
     if warn_on_missing_mappings:
         unmapped = set(series) - set(mapping)

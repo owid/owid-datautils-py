@@ -4,6 +4,7 @@
 
 import numpy as np
 import pandas as pd
+from pytest import warns
 
 from owid.datautils import dataframes
 
@@ -776,3 +777,65 @@ class TestMultiMerge:
         assert dataframes.multi_merge(
             [df1, df2, df3], how="right", on=["col_01", "col_02"]
         ).equals(df_out)
+
+
+class TestMapSeries:
+    mapping = {
+        "country_01": "Country 1",
+        "country_02": "Country 2",
+    }
+
+    def test_all_countries_mapped_and_all_mappings_used(self):
+        series_in = pd.Series(["country_01", "country_02"])
+        series_out = pd.Series(["Country 1", "Country 2"])
+        assert dataframes.map_series(series=series_in, mapping=self.mapping).equals(series_out)
+
+    def test_one_country_missing_in_mapping(self):
+        series_in = pd.Series(["country_01", "country_02", "country_03"])
+        series_out = pd.Series(["Country 1", "Country 2", "country_03"])
+        assert dataframes.map_series(series=series_in, mapping=self.mapping, make_unmapped_values_nan=False).\
+            equals(series_out)
+
+    def test_one_country_missing_in_mapping_converted_into_nan(self):
+        series_in = pd.Series(["country_01", "country_02", "country_03"])
+        series_out = pd.Series(["Country 1", "Country 2", np.nan])
+        assert dataframes.map_series(series=series_in, mapping=self.mapping, make_unmapped_values_nan=True).\
+            equals(series_out)
+
+    def test_warn_if_one_country_missing_in_mapping(self):
+        series_in = pd.Series(["country_01", "country_02", "country_03"])
+        with warns(UserWarning, match="missing"):
+            dataframes.map_series(series=series_in, mapping=self.mapping, warn_on_missing_mappings=True)
+
+    def test_one_country_unused_in_mapping(self):
+        series_in = pd.Series(["country_01"])
+        series_out = pd.Series(["Country 1"])
+        assert dataframes.map_series(series=series_in, mapping=self.mapping, warn_on_unused_mappings=False).\
+            equals(series_out)
+
+    def test_warn_when_one_country_unused_in_mapping(self):
+        series_in = pd.Series(["country_01"])
+        with warns(UserWarning, match="unused"):
+            dataframes.map_series(series=series_in, mapping=self.mapping, warn_on_unused_mappings=True)
+
+    def test_empty_series(self):
+        series_in = pd.Series([], dtype=object)
+        series_out = pd.Series([], dtype=object)
+        assert dataframes.map_series(series=series_in, mapping=self.mapping).equals(series_out)
+
+    def test_empty_mapping(self):
+        mapping = {}
+        series_in = pd.Series(["country_01", "country_02"])
+        series_out = pd.Series(["country_01", "country_02"])
+        assert dataframes.map_series(series=series_in, mapping=mapping).equals(series_out)
+
+    def test_mappings_of_mixed_types(self):
+        # Note: A series containing 1 and True are considered identical. Therefore, a mapping
+        # > pd.Series([1, 2, True]).map({1: 10, 2: 20, True: 30})
+        # would result in
+        # > pd.Series([30, 20, 30])
+        # since 1 is considered identical to True, and the latest occurrence in the mapping prevails (namely True: 30).
+        mapping = {2: "20", 3: False, "4": 40, True: 50}
+        series_in = pd.Series([2, 3, "4", True])
+        series_out = pd.Series(["20", False, 40, 50])
+        assert dataframes.map_series(series=series_in, mapping=mapping).equals(series_out)

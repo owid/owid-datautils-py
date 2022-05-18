@@ -324,9 +324,14 @@ def multi_merge(
     return merged
 
 
-def map_series(series: pd.Series, mapping: Dict[Any, Any], make_unmapped_values_nan: bool = False,
-               warn_on_missing_mappings: bool = False,
-               warn_on_unused_mappings: bool = False, show_full_warning: bool = False) -> pd.Series:
+def map_series(
+    series: pd.Series,
+    mapping: Dict[Any, Any],
+    make_unmapped_values_nan: bool = False,
+    warn_on_missing_mappings: bool = False,
+    warn_on_unused_mappings: bool = False,
+    show_full_warning: bool = False,
+) -> pd.Series:
     """Map values of a series given a certain mapping.
 
     This function does almost the same as
@@ -347,6 +352,8 @@ def map_series(series: pd.Series, mapping: Dict[Any, Any], make_unmapped_values_
     make_unmapped_values_nan : bool
         If true, values in the series that are not in the mapping will be translated into nan; otherwise, they will keep
         their original values.
+    warn_on_missing_mappings : bool
+        True to warn if elements in series are missing in mapping.
     warn_on_unused_mappings : bool
         True to warn if the mapping contains values that are not present in the series. False to ignore.
     show_full_warning : bool
@@ -369,12 +376,19 @@ def map_series(series: pd.Series, mapping: Dict[Any, Any], make_unmapped_values_
     if warn_on_missing_mappings:
         unmapped = set(series) - set(mapping)
         if len(unmapped) > 0:
-            warn_on_list_of_entities(unmapped, f"{len(unmapped)} missing values in mapping.",
-                                     show_list=show_full_warning)
+            warn_on_list_of_entities(
+                unmapped,
+                f"{len(unmapped)} missing values in mapping.",
+                show_list=show_full_warning,
+            )
 
     if warn_on_unused_mappings:
         unused = set(mapping) - set(series)
         if len(unused) > 0:
-            warn_on_list_of_entities(unused, f"{len(unused)} unused values in mapping.", show_list=show_full_warning)
+            warn_on_list_of_entities(
+                unused,
+                f"{len(unused)} unused values in mapping.",
+                show_list=show_full_warning,
+            )
 
     return series_mapped

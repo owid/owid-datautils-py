@@ -13,8 +13,9 @@ class ExceptionFromDocstring(Exception):
         super().__init__(exception_message or self.__doc__, *args)
 
 
-def warn_on_list_of_entities(list_of_entities: Union[List[Any], Set[Any]], warning_message: str, show_list: bool
-                             ) -> None:
+def warn_on_list_of_entities(
+    list_of_entities: Union[List[Any], Set[Any]], warning_message: str, show_list: bool
+) -> None:
     """Raise a warning with a custom message, and optionally print a list of affected elements.
 
     Parameters

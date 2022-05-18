@@ -203,7 +203,7 @@ def list_countries_in_region_that_must_have_data(
         selected["cumulative_fraction"] > min_frac_cumulative_population
     ]
     if len(candidates_to_ignore) > 0:
-        selected = selected.loc[0: candidates_to_ignore.index[0]]
+        selected = selected.loc[0 : candidates_to_ignore.index[0]]
 
     if (min_frac_individual_population == 0) and (min_frac_cumulative_population == 0):
         warnings.warn(
@@ -410,10 +410,13 @@ def harmonize_countries(
     # Countries in dataframe that are not in mapping will be either left unchanged of converted to nan.
     df_harmonized = df.copy()
     df_harmonized[country_col] = map_series(
-        series=df[country_col], mapping=countries, make_unmapped_values_nan=make_missing_countries_nan,
+        series=df[country_col],
+        mapping=countries,
+        make_unmapped_values_nan=make_missing_countries_nan,
         warn_on_missing_mappings=warn_on_missing_countries,
         warn_on_unused_mappings=warn_on_unused_countries,
-        show_full_warning=show_full_warning)
+        show_full_warning=show_full_warning,
+    )
 
     return df_harmonized
 

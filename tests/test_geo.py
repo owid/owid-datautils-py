@@ -103,7 +103,9 @@ class TestAddPopulationToDataframe:
                 "population": [np.nan, np.nan],
             }
         )
-        assert geo.add_population_to_dataframe(df=df_in, warn_on_missing_countries=False).equals(df_out)
+        assert geo.add_population_to_dataframe(
+            df=df_in, warn_on_missing_countries=False
+        ).equals(df_out)
 
     def test_countries_in_population_but_not_for_given_years(self):
         df_in = pd.DataFrame(
@@ -158,7 +160,9 @@ class TestAddPopulationToDataframe:
             }
         )
         with warns(UserWarning):
-            geo.add_population_to_dataframe(df=df_in, warn_on_missing_countries=True).equals(df_out)
+            geo.add_population_to_dataframe(
+                df=df_in, warn_on_missing_countries=True
+            ).equals(df_out)
 
 
 @patch("builtins.open", new_callable=mock_open, read_data=json.dumps(mock_countries))
@@ -170,10 +174,12 @@ class TestHarmonizeCountries:
         df_out = pd.DataFrame(
             {"country": ["Country 1", "Country 2"], "some_variable": [1, 2]}
         )
-        assert geo.harmonize_countries(df=df_in, countries_file="IGNORED", warn_on_unused_countries=False,
-                                       warn_on_missing_countries=False).equals(
-            df_out
-        )
+        assert geo.harmonize_countries(
+            df=df_in,
+            countries_file="IGNORED",
+            warn_on_unused_countries=False,
+            warn_on_missing_countries=False,
+        ).equals(df_out)
 
     def test_one_country_unchanged_and_another_unknown(self, _):
         df_in = pd.DataFrame(
@@ -182,10 +188,12 @@ class TestHarmonizeCountries:
         df_out = pd.DataFrame(
             {"country": ["Country 1", "country_04"], "some_variable": [1, 2]}
         )
-        assert geo.harmonize_countries(df=df_in, countries_file="IGNORED", warn_on_unused_countries=False,
-                                       warn_on_missing_countries=False).equals(
-            df_out
-        )
+        assert geo.harmonize_countries(
+            df=df_in,
+            countries_file="IGNORED",
+            warn_on_unused_countries=False,
+            warn_on_missing_countries=False,
+        ).equals(df_out)
 
     def test_two_unknown_countries_made_nan(self, _):
         df_in = pd.DataFrame(
@@ -196,8 +204,12 @@ class TestHarmonizeCountries:
         assert dataframes.are_equal(
             df1=df_out,
             df2=geo.harmonize_countries(
-                df=df_in, countries_file="IGNORED", make_missing_countries_nan=True, warn_on_unused_countries=False,
-                warn_on_missing_countries=False),
+                df=df_in,
+                countries_file="IGNORED",
+                make_missing_countries_nan=True,
+                warn_on_unused_countries=False,
+                warn_on_missing_countries=False,
+            ),
         )[0]
 
     def test_one_unknown_country_made_nan_and_a_known_country_changed(self, _):
@@ -210,8 +222,12 @@ class TestHarmonizeCountries:
         assert dataframes.are_equal(
             df1=df_out,
             df2=geo.harmonize_countries(
-                df=df_in, countries_file="IGNORED", make_missing_countries_nan=True, warn_on_unused_countries=False,
-                warn_on_missing_countries=False),
+                df=df_in,
+                countries_file="IGNORED",
+                make_missing_countries_nan=True,
+                warn_on_unused_countries=False,
+                warn_on_missing_countries=False,
+            ),
         )[0]
 
     def test_on_dataframe_with_no_countries(self, _):
@@ -220,7 +236,9 @@ class TestHarmonizeCountries:
         df_out["country"] = df_out["country"].astype(object)
         assert dataframes.are_equal(
             df1=df_out,
-            df2=geo.harmonize_countries(df=df_in, countries_file="IGNORED", warn_on_unused_countries=False),
+            df2=geo.harmonize_countries(
+                df=df_in, countries_file="IGNORED", warn_on_unused_countries=False
+            ),
         )[0]
 
     def test_change_country_column_name(self, _):
@@ -229,25 +247,37 @@ class TestHarmonizeCountries:
         assert dataframes.are_equal(
             df1=df_out,
             df2=geo.harmonize_countries(
-                df=df_in, countries_file="IGNORED", country_col="Country", warn_on_unused_countries=False,
+                df=df_in,
+                countries_file="IGNORED",
+                country_col="Country",
+                warn_on_unused_countries=False,
             ),
         )[0]
 
     def test_warn_on_unused_mappings(self, _):
-        df_in = pd.DataFrame(
-            {"country": ["country_02"], "some_variable": [1]}
-        )
+        df_in = pd.DataFrame({"country": ["country_02"], "some_variable": [1]})
         with warns(UserWarning, match="unused"):
-            geo.harmonize_countries(df=df_in, countries_file="IGNORED", warn_on_unused_countries=True,
-                                    warn_on_missing_countries=True)
+            geo.harmonize_countries(
+                df=df_in,
+                countries_file="IGNORED",
+                warn_on_unused_countries=True,
+                warn_on_missing_countries=True,
+            )
 
     def test_warn_on_countries_missing_in_mapping(self, _):
         df_in = pd.DataFrame(
-            {"country": ["country_02", "country_03", "country_04"], "some_variable": [1, 2, 3]}
+            {
+                "country": ["country_02", "country_03", "country_04"],
+                "some_variable": [1, 2, 3],
+            }
         )
         with warns(UserWarning, match="missing"):
-            geo.harmonize_countries(df=df_in, countries_file="IGNORED", warn_on_unused_countries=True,
-                                    warn_on_missing_countries=True)
+            geo.harmonize_countries(
+                df=df_in,
+                countries_file="IGNORED",
+                warn_on_unused_countries=True,
+                warn_on_missing_countries=True,
+            )
 
 
 class TestListCountriesInRegions(unittest.TestCase):

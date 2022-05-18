@@ -8,7 +8,7 @@ from typing import Tuple, Union, List, Any, Dict, Optional
 import numpy as np
 import pandas as pd
 
-from owid.datautils.common import ExceptionFromDocstring
+from owid.datautils.common import ExceptionFromDocstring, warn_on_list_of_entities
 
 
 class DataFramesHaveDifferentLengths(ExceptionFromDocstring):
@@ -326,7 +326,7 @@ def multi_merge(
 
 
 def map_series(series: pd.Series, mapping: Dict[Any, Any], make_unmapped_values_nan: bool = False,
-               warn_on_unused_mappings: bool = False) -> pd.Series:
+               warn_on_unused_mappings: bool = False, show_full_warning: bool = False) -> pd.Series:
     """Map values of a series given a certain mapping.
 
     This function does almost the same as
@@ -349,6 +349,8 @@ def map_series(series: pd.Series, mapping: Dict[Any, Any], make_unmapped_values_
         their original values.
     warn_on_unused_mappings : bool
         True to warn if the mapping contains values that are not present in the series. False to ignore.
+    show_full_warning : bool
+        True to print the entire list of unused mappings (only relevant if warn_on_unused_mappings is True).
 
     Returns
     -------
@@ -367,6 +369,6 @@ def map_series(series: pd.Series, mapping: Dict[Any, Any], make_unmapped_values_
     if warn_on_unused_mappings:
         unused = set(mapping) - set(series)
         if len(unused) > 0:
-            warnings.warn(f"{len(unused)} unused values in mapping.")
+            warn_on_list_of_entities(unused, f"{len(unused)} unused values in mapping.", show_list=show_full_warning)
 
     return series_mapped

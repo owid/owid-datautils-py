@@ -12,6 +12,7 @@ import owid.catalog as catalog
 
 from owid.datautils.common import ExceptionFromDocstring, warn_on_list_of_entities
 from owid.datautils.dataframes import groupby_agg, map_series
+from owid.datautils.io.local import load_json
 
 # When creating region aggregates for a certain variable in a certain year, some mandatory countries must be
 # informed, otherwise the aggregate will be nan (since we consider that there is not enough information).
@@ -403,14 +404,10 @@ def harmonize_countries(
 
     """
     # Load country mappings.
-    with open(countries_file, "r") as _countries:
-        countries = json.loads(_countries.read())
-
-    # Find countries that exist in dataframe but are missing in (left column of) countries file.
-    missing_countries = sorted(set(df[country_col]) - set(countries))
+    countries = load_json(countries_file, warn_on_duplicated_keys=True)
 
     # Replace country names following the mapping given in the countries file.
-    # Countries in dataframe that are not among countries, will be left unchanged.
+    # Countries in dataframe that are not in mapping will be either left unchanged of converted to nan.
     df_harmonized = df.copy()
     df_harmonized[country_col] = map_series(
         series=df[country_col], mapping=countries, make_unmapped_values_nan=make_missing_countries_nan,

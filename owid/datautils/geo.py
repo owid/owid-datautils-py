@@ -4,14 +4,15 @@
 
 import json
 import warnings
-from typing import List, Union, Set, Optional, Dict, Any, cast
+from typing import List, Union, Optional, Dict, Any, cast
 
 import numpy as np
 import pandas as pd
 import owid.catalog as catalog
 
-from owid.datautils.common import ExceptionFromDocstring
-from owid.datautils.dataframes import groupby_agg
+from owid.datautils.common import ExceptionFromDocstring, warn_on_list_of_entities
+from owid.datautils.dataframes import groupby_agg, map_series
+from owid.datautils.io.local import load_json
 
 # When creating region aggregates for a certain variable in a certain year, some mandatory countries must be
 # informed, otherwise the aggregate will be nan (since we consider that there is not enough information).
@@ -59,14 +60,6 @@ def _load_income_groups() -> pd.DataFrame:
     return cast(pd.DataFrame, income_groups)
 
 
-def _warn_on_list_of_entities(
-    list_of_entities: Union[List[str], Set[str]], warning_message: str, show_list: bool
-) -> None:
-    print(warning_message)
-    if show_list:
-        print("\n".join(["* " + entity for entity in list_of_entities]))
-
-
 class RegionNotFound(ExceptionFromDocstring):
     """Region was not found in countries-regions dataset."""
 
@@ -112,7 +105,7 @@ def list_countries_in_region(
             member_codes = []
         else:
             member_codes = json.loads(member_codes_str)
-        # Get standardized names of these countries.
+        # Get harmonized names of these countries.
         members = countries_regions.loc[member_codes][
             "name"
         ].tolist()  # type: List[str]
@@ -167,7 +160,7 @@ def list_countries_in_region_that_must_have_data(
     Returns
     -------
     countries : list
-        List of countries that are expected to have the largest contribution.
+        Countries that are expected to have the largest contribution.
 
     """
     if countries_regions is None:
@@ -214,7 +207,7 @@ def list_countries_in_region_that_must_have_data(
 
     if (min_frac_individual_population == 0) and (min_frac_cumulative_population == 0):
         warnings.warn(
-            "WARNING: Conditions are too loose to select countries that must be included in the data."
+            "Conditions are too loose to select countries that must be included in the data."
         )
         selected = pd.DataFrame({"country": [], "fraction": []})
     elif (len(selected) == 0) or (
@@ -222,7 +215,7 @@ def list_countries_in_region_that_must_have_data(
     ):
         # This happens when the only way to fulfil the conditions is to include all countries.
         warnings.warn(
-            "WARNING: Conditions are too strict to select countries that must be included in the data."
+            "Conditions are too strict to select countries that must be included in the data."
         )
         selected = reference.copy()
 
@@ -293,8 +286,9 @@ def add_region_aggregates(
         region will be summed. Otherwise, only the variables indicated in the dictionary will be affected. All remaining
         variables will be nan.
     keep_original_region_with_suffix : str or None
-        If None, data for original region will be replaced by aggregate data constructed by this function. If not None,
-        original data for region will be kept; then, keep_original_region_with_suffix  it must be a name to add at the end of the
+        If None, original data for region will be replaced by aggregate data constructed by this function. If not None,
+        original data for region will be kept, with the same name, but having suffix keep_original_region_with_suffix
+        added to its name.
 
     Returns
     -------
@@ -382,21 +376,21 @@ def harmonize_countries(
     warn_on_unused_countries: bool = True,
     show_full_warning: bool = True,
 ) -> pd.DataFrame:
-    """Standardize country names in dataframe, following the mapping given in a file.
+    """Harmonize country names in dataframe, following the mapping given in a file.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Original dataframe that contains a column of non-standardized country names.
+        Original dataframe that contains a column of non-harmonized country names.
     countries_file : str
-        Path to json file containing a mapping from non-standardized to standardized country names.
+        Path to json file containing a mapping from non-harmonized to harmonized country names.
     country_col : str
-        Name of column in df containing non-standardized country names.
+        Name of column in df containing non-harmonized country names.
     warn_on_missing_countries : bool
         True to warn about countries that appear in original table but not in countries file.
     make_missing_countries_nan : bool
         True to make nan any country that appears in original dataframe but not in countries file. False to keep their
-        original (possibly non-standardized) names.
+        original (possibly non-harmonized) names.
     warn_on_unused_countries : bool
         True to warn about countries that appear in countries file but are useless (since they do not appear in original
         dataframe).
@@ -405,46 +399,26 @@ def harmonize_countries(
 
     Returns
     -------
-    df_standardized : pd.DataFrame
+    df_harmonized : pd.DataFrame
         Original dataframe after standardizing the column of country names.
 
     """
     # Load country mappings.
-    with open(countries_file, "r") as _countries:
-        countries = json.loads(_countries.read())
-
-    # Find countries that exist in dataframe but are missing in (left column of) countries file.
-    missing_countries = sorted(set(df[country_col]) - set(countries))
+    countries = load_json(countries_file, warn_on_duplicated_keys=True)
 
     # Replace country names following the mapping given in the countries file.
-    # Countries in dataframe that are not among countries, will be left unchanged.
-    df_standardized = df.copy()
-    df_standardized[country_col] = df[country_col].replace(countries)
+    # Countries in dataframe that are not in mapping will be either left unchanged of converted to nan.
+    df_harmonized = df.copy()
+    df_harmonized[country_col] = map_series(
+        series=df[country_col],
+        mapping=countries,
+        make_unmapped_values_nan=make_missing_countries_nan,
+        warn_on_missing_mappings=warn_on_missing_countries,
+        warn_on_unused_mappings=warn_on_unused_countries,
+        show_full_warning=show_full_warning,
+    )
 
-    # Decide what to do with missing countries.
-    if len(missing_countries) > 0:
-        if warn_on_missing_countries:
-            _warn_on_list_of_entities(
-                list_of_entities=missing_countries,
-                warning_message=f"WARNING: {len(missing_countries)} entities in dataframe missing in countries file.",
-                show_list=show_full_warning,
-            )
-        if make_missing_countries_nan:
-            df_standardized.loc[
-                df_standardized[country_col].isin(missing_countries), country_col
-            ] = np.nan
-
-    # Optionally warn if countries file has entities that have not been found in dataframe.
-    if warn_on_unused_countries:
-        unused_countries = sorted(set(countries) - set(df[country_col]))
-        if len(unused_countries) > 0:
-            _warn_on_list_of_entities(
-                list_of_entities=unused_countries,
-                warning_message=f"WARNING: {len(unused_countries)} unused entities in countries file.",
-                show_list=show_full_warning,
-            )
-
-    return df_standardized
+    return df_harmonized
 
 
 def add_population_to_dataframe(
@@ -491,9 +465,9 @@ def add_population_to_dataframe(
     missing_countries = set(df[country_col]) - set(population[country_col])
     if len(missing_countries) > 0:
         if warn_on_missing_countries:
-            _warn_on_list_of_entities(
+            warn_on_list_of_entities(
                 list_of_entities=missing_countries,
-                warning_message=f"WARNING: {len(missing_countries)} countries not found in population dataset. "
+                warning_message=f"{len(missing_countries)} countries not found in population dataset. "
                 f"They will remain in the dataset, but have nan population.",
                 show_list=show_full_warning,
             )

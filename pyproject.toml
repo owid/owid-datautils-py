@@ -19,7 +19,7 @@ structlog = "^21.5.0"
 colorama = "^0.4.4"
 mypy-boto3-s3 = "^1.21.23"
 owid-catalog = "^0.2.6"
-
+flake8-type-annotations = "^0.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
@@ -27,10 +27,15 @@ pytest-cov = "^2.12.1"
 black = "^22.3"
 mypy = "^0.910"
 flake8 = "^3.9.2"
+flake8-docstrings = "^1.6.0"
 watchdog = "^2.1.5"
 boto3-stubs = {extras = ["s3"], version = "^1.21.16"}
 ipdb = "^0.13.9"
 ipykernel = "^6.13.0"
+flake8-html = "^0.4.2"
+flake8-bugbear = "^22.4.25"
+flake8-builtins = "^1.5.3"
+flake8-bandit = "^3.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

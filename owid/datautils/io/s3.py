@@ -1,3 +1,5 @@
+"""S3 utils."""
+
 import os
 import json
 import tempfile
@@ -19,6 +21,7 @@ AWS_PROFILE = os.environ.get("AWS_PROFILE", "default")
 
 
 class S3:
+    """S3 API class."""
 
     SPACES_ENDPOINT = "https://nyc3.digitaloceanspaces.com"
     S3_BASE = "s3://{bucket}.nyc3.digitaloceanspaces.com"
@@ -40,6 +43,7 @@ class S3:
 
     def list_files_in_folder(self, s3_path: str) -> List[str]:
         """List files in a folder within a bucket.
+
         Parameters
         ----------
         s3_path : str
@@ -81,6 +85,7 @@ class S3:
     ) -> str:
         """
         Upload file to Walden.
+
         Args:
             local_path: Local path to file.
             s3_path: File location to load object from. e.g.
@@ -208,7 +213,7 @@ class S3:
                     return f.read()
 
     def get_metadata(self, s3_path: str) -> Any:
-        """Get metadata from file `s3_path`
+        """Get metadata from file `s3_path`.
 
         Args:
             s3_path (str): Path to S3 file.
@@ -235,6 +240,10 @@ def s3_path_to_bucket_key(url: str) -> Tuple[str, str]:
 
 
 def check_for_aws_profile(profile_name: str) -> None:
+    """Check that AWS config is correctly configured.
+
+    You should have the credentials file at ~/.aws/config.
+    """
     filename = path.expanduser("~/.aws/config")
     if not path.exists(filename) or f"[{profile_name}]" not in open(filename).read():
         raise FileExistsError(
@@ -253,18 +262,24 @@ aws_secret_access_key = ...
 def obj_to_s3(
     data: S3_OBJECT, s3_path: str, public: bool = False, **kwargs: Any
 ) -> None:
+    """See S3.obj_to_s3."""
     s3 = S3()
     return s3.obj_to_s3(data, s3_path, public, **kwargs)
 
 
 def obj_from_s3(s3_path: str, **kwargs: Any) -> S3_OBJECT:
+    """See S3.obj_from_s3."""
     s3 = S3()
     return s3.obj_from_s3(s3_path, **kwargs)
 
 
 class UploadError(Exception):
+    """Upload error."""
+
     pass
 
 
 class DownloadError(Exception):
+    """Download error."""
+
     pass

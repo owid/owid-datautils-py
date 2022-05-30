@@ -1,6 +1,4 @@
-"""Utils related to geographical entities.
-
-"""
+"""Utils related to geographical entities."""
 
 import json
 import warnings
@@ -130,8 +128,9 @@ def list_countries_in_region_that_must_have_data(
     income_groups: Optional[pd.DataFrame] = None,
     population: Optional[pd.DataFrame] = None,
 ) -> List[str]:
-    """List countries of a region that are expected to have the largest contribution to any variable (based on their
-    population).
+    """List countries of a region that are expected to have the largest contribution to any variable.
+
+    The contribution of each country is based on their population relative to the region's total.
 
     Method to select countries:
     1. Select countries whose population is, on a certain reference year (reference_year), larger than a fraction of
@@ -207,7 +206,8 @@ def list_countries_in_region_that_must_have_data(
 
     if (min_frac_individual_population == 0) and (min_frac_cumulative_population == 0):
         warnings.warn(
-            "Conditions are too loose to select countries that must be included in the data."
+            "Conditions are too loose to select countries that must be included in the"
+            " data."
         )
         selected = pd.DataFrame({"country": [], "fraction": []})
     elif (len(selected) == 0) or (
@@ -215,13 +215,15 @@ def list_countries_in_region_that_must_have_data(
     ):
         # This happens when the only way to fulfil the conditions is to include all countries.
         warnings.warn(
-            "Conditions are too strict to select countries that must be included in the data."
+            "Conditions are too strict to select countries that must be included in the"
+            " data."
         )
         selected = reference.copy()
 
     print(
-        f"{len(selected)} countries must be informed for {region} (covering {selected['fraction'].sum() * 100: .2f}% "
-        f"of the population; otherwise aggregate data will be nan."
+        f"{len(selected)} countries must be informed for {region} (covering"
+        f" {selected['fraction'].sum() * 100: .2f}% of the population; otherwise"
+        " aggregate data will be nan."
     )
     countries = selected["country"].tolist()  # type: List[str]
 
@@ -240,8 +242,9 @@ def add_region_aggregates(
     aggregations: Optional[Dict[str, Any]] = None,
     keep_original_region_with_suffix: Optional[str] = None,
 ) -> pd.DataFrame:
-    """Add data for regions (e.g. income groups or continents) to a dataset, or replace it, if the dataset already
-    contains data for that region.
+    """Add data for regions (e.g. income groups or continents) to a dataset.
+
+    If data for a region already exists in the dataset, it will be replaced.
 
     When adding up the contribution from different countries (e.g. Spain, France, etc.) of a region (e.g. Europe), we
     want to avoid two problems:
@@ -467,8 +470,11 @@ def add_population_to_dataframe(
         if warn_on_missing_countries:
             warn_on_list_of_entities(
                 list_of_entities=missing_countries,
-                warning_message=f"{len(missing_countries)} countries not found in population dataset. "
-                f"They will remain in the dataset, but have nan population.",
+                warning_message=(
+                    f"{len(missing_countries)} countries not found in population"
+                    " dataset. They will remain in the dataset, but have nan"
+                    " population."
+                ),
                 show_list=show_full_warning,
             )
 

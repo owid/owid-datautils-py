@@ -1,6 +1,4 @@
-"""Objects related to pandas dataframes.
-
-"""
+"""Objects related to pandas dataframes."""
 
 from typing import Tuple, Union, List, Any, Dict, Optional
 
@@ -25,8 +23,10 @@ def compare(
     absolute_tolerance: float = 1e-8,
     relative_tolerance: float = 1e-8,
 ) -> pd.DataFrame:
-    """Compare two dataframes element by element, assuming that nans are all identical, and assuming certain absolute
-    and relative tolerances for the comparison of floats.
+    """Compare two dataframes element by element to see if they are equal.
+
+    It assumes that nans are all identical, and allows for certain absolute and relative tolerances for the comparison
+    of floats.
 
     NOTE: Dataframes must have the same number of rows to be able to compare them.
 
@@ -93,8 +93,9 @@ def are_equal(
     relative_tolerance: float = 1e-8,
     verbose: bool = True,
 ) -> Tuple[bool, pd.DataFrame]:
-    """Check whether two dataframes are equal, assuming that all nans are identical, and comparing floats by means of
-    certain absolute and relative tolerances.
+    """Check whether two dataframes are equal.
+
+    It assumes that all nans are identical, and compares floats by means of certain absolute and relative tolerances.
 
     Parameters
     ----------
@@ -193,7 +194,10 @@ def are_equal(
         )
         all_values_equal = compared.all().all()
         if not all_values_equal:
-            summary += "\n* Values differ by more than the given absolute and relative tolerances."
+            summary += (
+                "\n* Values differ by more than the given absolute and relative"
+                " tolerances."
+            )
 
         # Dataframes are equal only if all previous checks have passed.
         equal = equal & all_values_equal

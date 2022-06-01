@@ -1,18 +1,16 @@
 from owid.datautils.ui import red, blue, bail, log
 
 
-mock_strs = ["Test", 1, "Something + weird-no particulár meaning"]
+mock_strs = ["Test", "1", "Something + weird-no particulár meaning"]
 
 
 def test_red():
-    mock_strs = ["Test", 1, "Something + weird-no particulár meaning"]
     for mock_str in mock_strs:
         s = red(mock_str)
         assert s == f"\x1b[31m{mock_str}\x1b[0m"
 
 
 def test_blue():
-    mock_strs = ["Test", 1, "Something + weird-no particulár meaning"]
     for mock_str in mock_strs:
         s = blue(mock_str)
         assert s == f"\x1b[34m{mock_str}\x1b[0m"

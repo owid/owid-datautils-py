@@ -33,3 +33,26 @@ Run:
 # run all unit tests and CI checks
 make test
 ```
+
+### Other useful commands
+
+#### Coverage
+
+```
+make coverage
+```
+
+This will print how much of the source code is covered by the implemented tests. Additionally, it generates an HTML
+directory (`.report-coverage`), which provides a frendly view of the source code coverage.
+
+
+#### Linting
+
+```
+make linting
+```
+
+Check if the source code passes all flake8 styling tests. Additionally, it generages an HTML directory
+(`.report-linting`), which provides a friendly view of the style issues (if any).
+
+Flake8 configuration can be tweaked in [.flake8](.flake8) file.

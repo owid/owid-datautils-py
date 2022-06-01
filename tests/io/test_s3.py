@@ -1,5 +1,7 @@
 # type: ignore
 from unittest import mock
+import boto3
+
 from owid.datautils.io import s3
 
 
@@ -26,3 +28,54 @@ def test_download_from_s3(connect_mock):
         "test_bucket/test.csv",
         "test.csv",
     )
+
+
+@mock.patch.object(s3.S3, "connect")
+def test_list_files_in_folder(connect_mock):
+    url = "https://test_bucket.nyc3.digitaloceanspaces.com/test_bucket/"
+    S3 = s3.S3()
+
+    connect_mock.return_value.list_objects_v2.return_value = {
+        "KeyCount": 0,
+        "MaxKeys": "1000",
+        "Contents": [{"Key": "test.csv", "Key": "test_2.csv"}],
+    }
+    obj_list = S3.list_files_in_folder(url)
+    assert obj_list == []
+
+    connect_mock.return_value.list_objects_v2.return_value = {
+        "KeyCount": 2,
+        "MaxKeys": 2,
+        "Contents": [{"Key": "test.csv"}, {"Key": "test_2.csv"}],
+    }
+    obj_list = S3.list_files_in_folder(url)
+    assert obj_list == ["test.csv", "test_2.csv"]
+
+    url = "https://test_bucket.nyc3.digitaloceanspaces.com/test_bucket"
+    connect_mock.return_value.list_objects_v2.return_value = {
+        "KeyCount": 2,
+        "MaxKeys": 2,
+        "Contents": [{"Key": "test.csv"}, {"Key": "test_2.csv"}],
+    }
+    obj_list = S3.list_files_in_folder(url)
+    assert obj_list == ["test.csv", "test_2.csv"]
+
+
+@mock.patch("owid.datautils.io.s3.check_for_aws_profile", return_value=None)
+@mock.patch.object(boto3.Session, "client")
+def test_connect(check_mocker, session_mocker):
+    S3 = s3.S3()
+    session_mocker.return_value = "client"
+    S3.connect()
+
+
+@mock.patch.object(s3.S3, "connect")
+def test_upload_to_s3(connect_mock):
+    connect_mock.return_value.upload_file.return_value = None
+    url = "https://walden.nyc3.digitaloceanspaces.com/a/test.csv"
+    S3 = s3.S3()
+    s3_path = S3.upload_to_s3(s3_path=url, local_path="test.csv", public=True)
+    assert url == s3_path
+
+    s3_path = S3.upload_to_s3(s3_path=url, local_path="test.csv", public=False)
+    assert url.replace("https", "s3") == s3_path

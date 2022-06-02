@@ -16,7 +16,7 @@ check-typing: .venv
 
 coverage: .venv
 	@echo '==> Unit testing with coverage'
-	poetry run pytest --cov=owid --cov-report=term-missing --cov-report=html:.report-coverage tests
+	poetry run pytest --cov=owid --cov-report=term-missing --cov-report=html:.report-coverage --cov-report=xml tests
 
 linting: .venv
 	@echo '==> Linting'

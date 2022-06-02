@@ -64,3 +64,8 @@ html_static_path = ['_static']
 
 
 html_logo = "_static/owid.png"
+
+## API docs
+from sphinx.ext.apidoc import main
+
+main(["-f", "-t", "apidoc-templates", "-P", "-o", "src", "../owid/"])

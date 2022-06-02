@@ -11,9 +11,8 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 # import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
-
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join("..", "owid")))
 
 # -- Project information -----------------------------------------------------
 
@@ -64,6 +63,23 @@ html_static_path = ['_static']
 
 
 html_logo = "_static/owid.png"
+
+autodoc_default_flags = [
+    "members",
+    "undoc-members",
+    "private-members",
+    "special-members",
+    "inherited-members",
+    "show-inheritance",
+]
+
+html_context = {
+    "display_github": True,  # Integrate GitHub
+    "github_user": "owid",  # Username
+    "github_repo": "covid-19-data",  # Repo name
+    "github_version": "master",  # Version
+    "conf_py_path": "/scripts/docs/",  # Path in the checkout to the docs root
+}
 
 ## API docs
 from sphinx.ext.apidoc import main

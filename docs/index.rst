@@ -25,4 +25,4 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   owid.datautils <src/index>
+   owid.datautils <src>

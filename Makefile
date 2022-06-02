@@ -28,4 +28,4 @@ watch: .venv
 
 bump: .venv
 	@echo '==> Bumping version'
-	poetry run bump2version $(filter-out $@, $(MAKECMDGOALS))
+	poetry run bump2version --no-tag  --no-commit $(filter-out $@, $(MAKECMDGOALS))

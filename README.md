@@ -1,5 +1,5 @@
 # data-utils
-![version](https://img.shields.io/badge/version-0.4.0-blue) ![version](https://img.shields.io/badge/python-3.8-blue.svg?&logo=python&logoColor=yellow)
+![version](https://img.shields.io/badge/version-0.4.1-blue) ![version](https://img.shields.io/badge/python-3.8-blue.svg?&logo=python&logoColor=yellow)
 
 `data-utils` is a library to support the work of the Data Team at Our World in Data.
 
@@ -56,3 +56,11 @@ Check if the source code passes all flake8 styling tests. Additionally, it gener
 (`.report-linting`), which provides a friendly view of the style issues (if any).
 
 Flake8 configuration can be tweaked in [.flake8](.flake8) file.
+
+#### Versioning
+
+```
+make bump [part]
+```
+
+Upgrade version in all files where it appears. `[part]` can be `patch`, `minor` ad `major`.

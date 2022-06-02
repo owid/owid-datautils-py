@@ -46,4 +46,10 @@ jobs:
 
     - name: Unit test
       run: |
-        make unittest
+        make coverage
+
+    - name: "Coverage: Upload to codecov.io"
+      uses: codecov/codecov-action@v2
+      fail_ci_if_error: true
+      verbose: true
+      files: ./coverage.xml

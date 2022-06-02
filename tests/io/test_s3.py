@@ -62,10 +62,10 @@ def test_list_files_in_folder(connect_mock):
 
 
 @mock.patch("owid.datautils.io.s3.check_for_aws_profile", return_value=None)
-@mock.patch.object(boto3.Session, "client")
-def test_connect(check_mocker, session_mocker):
+@mock.patch.object(boto3.Session, "__init__", return_value=None)
+@mock.patch.object(boto3.Session, "client", return_value="client")
+def test_connect(check_mocker, session_mocker_1, session_mocker_2):
     S3 = s3.S3()
-    session_mocker.return_value = "client"
     S3.connect()
 
 

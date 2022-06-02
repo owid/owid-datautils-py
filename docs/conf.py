@@ -12,7 +12,7 @@
 #
 # import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join("..", "owid")))
+sys.path.insert(0, os.path.abspath(os.path.join("../owid")))
 
 # -- Project information -----------------------------------------------------
 
@@ -76,9 +76,9 @@ autodoc_default_flags = [
 html_context = {
     "display_github": True,  # Integrate GitHub
     "github_user": "owid",  # Username
-    "github_repo": "covid-19-data",  # Repo name
-    "github_version": "master",  # Version
-    "conf_py_path": "/scripts/docs/",  # Path in the checkout to the docs root
+    "github_repo": "data-utils-py",  # Repo name
+    "github_version": "main",  # Version
+    "conf_py_path": "docs/",  # Path in the checkout to the docs root
 }
 
 ## API docs

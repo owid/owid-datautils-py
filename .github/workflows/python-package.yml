@@ -50,6 +50,7 @@ jobs:
 
     - name: "Coverage: Upload to codecov.io"
       uses: codecov/codecov-action@v2
-      fail_ci_if_error: true
-      verbose: true
-      files: ./coverage.xml
+      with:
+        fail_ci_if_error: true
+        verbose: true
+        files: coverage.xml

@@ -8,22 +8,5 @@ owid-datautils
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-Contents
---------
-
-.. toctree::
-   :maxdepth: 2
-
-   owid.datautils <src/datautils>
-   modules <src/modules>
+   owid.datautils <api/owid.datautils>

@@ -134,9 +134,9 @@ def list_countries_in_region_that_must_have_data(
 
     Method to select countries:
     1. Select countries whose population is, on a certain reference year (reference_year), larger than a fraction of
-      min_frac_individual_population with respect to the total population of the region.
+    min_frac_individual_population with respect to the total population of the region.
     2. Among those, sort countries by descending population, and cut as soon as the cumulative population exceeds
-      min_frac_cumulative_population.
+    min_frac_cumulative_population.
     Note: It may not be possible to fulfil both conditions. In that case, a warning is raised.
 
     Parameters

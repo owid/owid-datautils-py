@@ -20,9 +20,10 @@ Indices and tables
 * :ref:`search`
 
 Contents
--------
+--------
 
 .. toctree::
    :maxdepth: 2
 
-   owid.datautils <src>
+   owid.datautils <src/datautils>
+   modules <src/modules>

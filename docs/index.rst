@@ -9,4 +9,4 @@ owid-datautils
 .. toctree::
    :maxdepth: 2
 
-   owid.datautils <api/owid.datautils>
+   owid.datautils <api/datautils>

@@ -20,6 +20,7 @@ colorama = "^0.4.4"
 mypy-boto3-s3 = "^1.21.23"
 owid-catalog = "^0.2.6"
 flake8-type-annotations = "^0.1.0"
+bumpversion = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"

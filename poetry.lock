@@ -489,6 +489,25 @@ python-versions = ">=3.6"
 typing-extensions = ">=4.1.0"
 
 [[package]]
+name = "bump2version"
+version = "1.0.1"
+description = "Version-bump your software with a single command!"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[[package]]
+name = "bumpversion"
+version = "0.6.0"
+description = "Version-bump your software with a single command!"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+bump2version = "*"
+
+[[package]]
 name = "certifi"
 version = "2021.10.8"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -1708,7 +1727,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "80d1d9faefee9d5960625371f2303031a13260b38ae484d98ffe74046932c850"
+content-hash = "8644025921fca07f47554a087940caa8eb33ad2635f257f6b6dfb8999c838753"
 
 [metadata.files]
 alabaster = [
@@ -1787,6 +1806,14 @@ botocore = [
 botocore-stubs = [
     {file = "botocore-stubs-1.24.43.tar.gz", hash = "sha256:b5013fbb635e039491dba920dfae2a3c0a26ca907f43c23af7bd4befa0a6e41f"},
     {file = "botocore_stubs-1.24.43-py3-none-any.whl", hash = "sha256:15a73882aaecce766c33581cd30f990eeafb2072335c563c0619287bed46b761"},
+]
+bump2version = [
+    {file = "bump2version-1.0.1-py2.py3-none-any.whl", hash = "sha256:37f927ea17cde7ae2d7baf832f8e80ce3777624554a653006c9144f8017fe410"},
+    {file = "bump2version-1.0.1.tar.gz", hash = "sha256:762cb2bfad61f4ec8e2bdf452c7c267416f8c70dd9ecb1653fd0bbb01fa936e6"},
+]
+bumpversion = [
+    {file = "bumpversion-0.6.0-py2.py3-none-any.whl", hash = "sha256:4eb3267a38194d09f048a2179980bb4803701969bff2c85fa8f6d1ce050be15e"},
+    {file = "bumpversion-0.6.0.tar.gz", hash = "sha256:4ba55e4080d373f80177b4dabef146c07ce73c7d1377aabf9d3c3ae1f94584a6"},
 ]
 certifi = [
     {file = "certifi-2021.10.8-py2.py3-none-any.whl", hash = "sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569"},

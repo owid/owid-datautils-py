@@ -25,3 +25,7 @@ linting: .venv
 watch: .venv
 	@echo '==> Watching for changes and re-running tests'
 	poetry run watchmedo shell-command -c 'clear; make check-formatting lint check-typing coverage' --recursive --drop .
+
+bump: .venv
+	@echo '==> Bumping version'
+	poetry run bump2version $(part)

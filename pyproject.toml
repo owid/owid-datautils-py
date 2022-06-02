@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "owid-datautils"
-version = "1.2.1"
+version = "1.2.2"
 description = "Data utils library by the Data Team at Our World in Data"
 authors = ["Our World In Data <tech@ourworldindata.org>"]
 license = "MIT"
@@ -41,5 +41,5 @@ furo = "^2022.4.7"
 Sphinx = "4.5.0"
 
 [build-system]
-requires = ["poetry-core>=1.2.1"]
+requires = ["poetry-core>=1.2.2"]
 build-backend = "poetry.core.masonry.api"

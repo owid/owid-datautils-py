@@ -63,6 +63,7 @@ html_static_path = ['_static']
 
 
 html_logo = "_static/owid.png"
+html_favicon = '_static/favicon.ico'
 
 autodoc_default_flags = [
     "members",

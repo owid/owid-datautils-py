@@ -5,7 +5,7 @@
 from pytest import warns
 from unittest.mock import patch, mock_open
 
-from owid.datautils.io.local import load_json
+from owid.datautils.io.local import load_json, save_json
 
 
 class TestLoadJson:
@@ -33,3 +33,8 @@ class TestLoadJson:
     @patch("builtins.open", new_callable=mock_open, read_data="{}")
     def test_load_empty_json(self, _):
         assert load_json(_) == {}
+
+
+def test_save_json(tmpdir):
+    data = {"1": "10", "2": "20"}
+    save_json(data, tmpdir / "test.json")

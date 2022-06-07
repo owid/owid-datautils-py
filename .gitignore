@@ -134,8 +134,5 @@ dmypy.json
 # Mac hidden files
 .DS_Store
 
-# PyTest
-.report-coverage
-
-# Flake8
-.report-linting
+# reports (coverage, linting)
+.reports/

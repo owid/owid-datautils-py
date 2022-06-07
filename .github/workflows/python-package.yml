@@ -46,7 +46,7 @@ jobs:
 
     - name: Unit test
       run: |
-        make coverage
+        make report-coverage
 
     - name: "Coverage: Upload to codecov.io"
       uses: codecov/codecov-action@v2

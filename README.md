@@ -37,24 +37,35 @@ make test
 
 ### Other useful commands
 
-#### Coverage
+#### Report
+```
+make report
+```
+
+Generate coverage and linting reportings. It is equivalent to running first `make report-coverage` and then 
+`make report-linting`. It also launches a local server so you can access the reports via localhost:8000 URL.
+
+The generated reports are saved as `./reports/coverage` and `./reports/linting` (both HTML directories).
+
+
+##### Coverage
 
 ```
-make coverage
+make report-coverage
 ```
 
 This will print how much of the source code is covered by the implemented tests. Additionally, it generates an HTML
-directory (`.report-coverage`), which provides a frendly view of the source code coverage.
+directory (`.reports/coverage`), which provides a frendly view of the source code coverage.
 
 
-#### Linting
+##### Linting
 
 ```
-make linting
+make report-linting
 ```
 
 Check if the source code passes all flake8 styling tests. Additionally, it generages an HTML directory
-(`.report-linting`), which provides a friendly view of the style issues (if any).
+(`.reports/linting`), which provides a friendly view of the style issues (if any).
 
 Flake8 configuration can be tweaked in [.flake8](.flake8) file.
 

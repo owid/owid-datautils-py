@@ -55,3 +55,26 @@ def load_json(
             data = json.loads(_json_file.read())
 
     return cast(Dict[Any, Any], data)
+
+
+def save_json(data: Any, json_file: Union[str, Path], **kwargs: Any) -> None:
+    """Save data to a json file.
+
+    Parameters
+    ----------
+    data : list
+        Data to be stored in a json file.
+    json_file : str
+        Path to output json file.
+    **kwargs
+        Additional keyword arguments for json.dump (e.g. indent=4, sort_keys=True).
+
+    """
+    # Ensure json_file is a path.
+    json_file = Path(json_file)
+
+    # Ensure output directory exists.
+    json_file.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(json_file, "w") as _json_file:
+        json.dump(data, _json_file, **kwargs)

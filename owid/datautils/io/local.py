@@ -1,6 +1,4 @@
-"""Input/Output functions for local files.
-
-"""
+"""Input/Output functions for local files."""
 
 import json
 from pathlib import Path

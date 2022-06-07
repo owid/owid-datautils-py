@@ -1,3 +1,1 @@
-"""Utils related to sanity checks of datasets.
-
-"""
+"""Utils related to sanity checks of datasets."""

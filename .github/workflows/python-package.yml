@@ -46,4 +46,12 @@ jobs:
 
     - name: Unit test
       run: |
-        make unittest
+        make report-coverage
+
+    - name: "Coverage: Upload to codecov.io"
+      uses: codecov/codecov-action@v2
+      with:
+        fail_ci_if_error: true
+        verbose: true
+        files: coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}

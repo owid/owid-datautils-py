@@ -1,6 +1,4 @@
-"""Common objects shared by other modules.
-
-"""
+"""Common objects shared by other modules."""
 
 import warnings
 from typing import Any, List, Set, Union

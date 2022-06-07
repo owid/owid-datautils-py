@@ -2,7 +2,7 @@
 #  default.mk
 #
 
-SRC = src test
+SRC = owid test
 
 default:
 	@echo 'Available commands:'
@@ -20,7 +20,7 @@ test-default: check-formatting lint check-typing unittest
 
 lint-default: .venv
 	@echo '==> Linting'
-	@poetry run flake8 $(SRC)
+	@poetry run flake8 owid
 
 check-formatting-default: .venv
 	@echo '==> Checking formatting'

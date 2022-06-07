@@ -133,3 +133,6 @@ dmypy.json
 
 # Mac hidden files
 .DS_Store
+
+# reports (coverage, linting)
+.reports/

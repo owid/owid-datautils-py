@@ -1,3 +1,1 @@
-"""Utils for the processing of different data formats.
-
-"""
+"""Utils for the processing of different data formats."""

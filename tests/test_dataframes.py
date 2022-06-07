@@ -855,3 +855,22 @@ class TestMapSeries:
         assert dataframes.map_series(series=series_in, mapping=mapping).equals(
             series_out
         )
+
+
+class TestConcatenate:
+    def test_concat_categoricals(self):
+        a = pd.DataFrame({"x": ["a"], "d": [1]}).astype("category")
+        b = pd.DataFrame({"x": ["b"], "d": [2]}).astype("category")
+
+        out = dataframes.concatenate([a, b])
+        assert list(out.x.cat.categories) == ["a", "b"]
+        assert out.to_dict(orient="records") == [{"x": "a", "d": 1}, {"x": "b", "d": 2}]
+
+
+class TestApplyOnCategoricals:
+    def test_string_func(self):
+        df = pd.DataFrame({"x": ["a", "b"], "y": ["b", "c"]}).astype("category")
+        out = dataframes.apply_on_categoricals(
+            [df.x, df.y], lambda x, y: str(x + "|" + y)
+        )
+        assert list(out.categories) == ["a|b", "b|c"]

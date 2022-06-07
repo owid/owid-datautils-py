@@ -1,9 +1,10 @@
 """Objects related to pandas dataframes."""
 
-from typing import Tuple, Union, List, Any, Dict, Optional
+from typing import Tuple, Union, List, Any, Dict, Optional, cast, Callable
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import union_categoricals
 
 from owid.datautils.common import ExceptionFromDocstring, warn_on_list_of_entities
 
@@ -397,3 +398,52 @@ def map_series(
             )
 
     return series_mapped
+
+
+def concatenate(dfs: List[pd.DataFrame], **kwargs: Any) -> pd.DataFrame:
+    """Concatenate while preserving categorical columns. Original [source code]
+    (https://stackoverflow.com/a/57809778/1275818)."""
+    # Iterate on categorical columns common to all dfs
+    for col in set.intersection(
+        *[set(df.select_dtypes(include="category").columns) for df in dfs]
+    ):
+        # Generate the union category across dfs for this column
+        uc = union_categoricals([df[col] for df in dfs])
+        # Change to union category for all dataframes
+        for df in dfs:
+            df[col] = pd.Categorical(df[col].values, categories=uc.categories)
+
+    return pd.concat(dfs, **kwargs)
+
+
+def apply_on_categoricals(
+    cat_series: List[pd.Series], func: Callable[..., str]
+) -> pd.Series:
+    """Apply a function on a list of categorical series. This is much faster than converting
+    them to strings first and then applying the function and it prevents memory explosion.
+    It uses category codes instead of using values directly and it builds the output categorical
+    mapping from codes to strings on the fly.
+
+    Parameters
+    ----------
+    cat_series :
+        List of series with category type.
+    func :
+        Function taking as many arguments as there are categorical series and returning str.
+    """
+    seen = {}
+    codes = []
+    categories = []
+    for cat_codes in zip(*[s.cat.codes for s in cat_series]):
+        if cat_codes not in seen:
+            # add category
+            cat_values = [
+                s.cat.categories[code] for s, code in zip(cat_series, cat_codes)
+            ]
+            categories.append(func(*cat_values))
+            seen[cat_codes] = len(categories) - 1
+
+        # use existing category
+        codes.append(seen[cat_codes])
+
+    return cast(pd.Series, pd.Categorical.from_codes(codes, categories=categories))

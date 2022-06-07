@@ -401,8 +401,10 @@ def map_series(
 
 
 def concatenate(dfs: List[pd.DataFrame], **kwargs: Any) -> pd.DataFrame:
-    """Concatenate while preserving categorical columns. Original [source code]
-    (https://stackoverflow.com/a/57809778/1275818)."""
+    """Concatenate while preserving categorical columns.
+
+    Original source code from https://stackoverflow.com/a/57809778/1275818.
+    """
     # Iterate on categorical columns common to all dfs
     for col in set.intersection(
         *[set(df.select_dtypes(include="category").columns) for df in dfs]
@@ -419,10 +421,11 @@ def concatenate(dfs: List[pd.DataFrame], **kwargs: Any) -> pd.DataFrame:
 def apply_on_categoricals(
     cat_series: List[pd.Series], func: Callable[..., str]
 ) -> pd.Series:
-    """Apply a function on a list of categorical series. This is much faster than converting
-    them to strings first and then applying the function and it prevents memory explosion.
-    It uses category codes instead of using values directly and it builds the output categorical
-    mapping from codes to strings on the fly.
+    """Apply a function on a list of categorical series.
+
+    This is much faster than converting them to strings first and then applying the function and it prevents memory
+    explosion. It uses category codes instead of using values directly and it builds the output categorical mapping
+    from codes to strings on the fly.
 
     Parameters
     ----------

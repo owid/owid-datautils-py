@@ -127,6 +127,7 @@ def list_countries_in_region_that_must_have_data(
     countries_regions: Optional[pd.DataFrame] = None,
     income_groups: Optional[pd.DataFrame] = None,
     population: Optional[pd.DataFrame] = None,
+    verbose: bool = False,
 ) -> List[str]:
     """List countries of a region that are expected to have the largest contribution to any variable.
 
@@ -155,6 +156,8 @@ def list_countries_in_region_that_must_have_data(
         Income-groups dataset, or None, to load it from the catalog.
     population : pd.DataFrame or None
         Population dataset, or None, to load it from owid catalog.
+    verbose : bool
+        True to print the number of countries (and percentage of cumulative population) that must have data.
 
     Returns
     -------
@@ -220,11 +223,12 @@ def list_countries_in_region_that_must_have_data(
         )
         selected = reference.copy()
 
-    print(
-        f"{len(selected)} countries must be informed for {region} (covering"
-        f" {selected['fraction'].sum() * 100: .2f}% of the population; otherwise"
-        " aggregate data will be nan."
-    )
+    if verbose:
+        print(
+            f"{len(selected)} countries must be informed for {region} (covering"
+            f" {selected['fraction'].sum() * 100: .2f}% of the population; otherwise"
+            " aggregate data will be nan."
+        )
     countries = selected["country"].tolist()  # type: List[str]
 
     return countries

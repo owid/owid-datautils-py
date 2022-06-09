@@ -329,21 +329,6 @@ class TestListCountriesInRegions(unittest.TestCase):
 
 
 class TestListCountriesInRegionsThatMustHaveData(unittest.TestCase):
-    def test_having_too_loose_conditions(self):
-        with self.assertWarns(UserWarning):
-            assert (
-                geo.list_countries_in_region_that_must_have_data(
-                    region="Region 1",
-                    reference_year=2020,
-                    min_frac_individual_population=0.0,
-                    min_frac_cumulative_population=0.0,
-                    countries_regions=mock_countries_regions,
-                    income_groups=mock_income_groups,
-                    population=mock_population,
-                )
-                == []
-            )
-
     def test_having_too_strict_condition_on_minimum_individual_contribution(self):
         with self.assertWarns(UserWarning):
             assert geo.list_countries_in_region_that_must_have_data(

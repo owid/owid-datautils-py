@@ -208,10 +208,6 @@ def list_countries_in_region_that_must_have_data(
         selected = selected.loc[0 : candidates_to_ignore.index[0]]
 
     if (min_frac_individual_population == 0) and (min_frac_cumulative_population == 0):
-        warnings.warn(
-            "Conditions are too loose to select countries that must be included in the"
-            " data."
-        )
         selected = pd.DataFrame({"country": [], "fraction": []})
     elif (len(selected) == 0) or (
         (len(selected) == len(reference)) and (len(reference) > 1)

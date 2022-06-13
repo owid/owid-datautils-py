@@ -75,8 +75,8 @@ def compare(
         else:
             # For numeric data, consider them equal within certain absolute and relative tolerances.
             compared_row = np.isclose(
-                df1[col].values,
-                df2[col].values,
+                df1[col].values,  # type: ignore
+                df2[col].values,  # type: ignore
                 atol=absolute_tolerance,
                 rtol=relative_tolerance,
             )

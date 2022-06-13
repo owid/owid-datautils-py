@@ -1,5 +1,5 @@
 # data-utils
-![version](https://img.shields.io/badge/version-0.4.1-blue)
+![version](https://img.shields.io/badge/version-0.4.2-blue)
 ![version](https://img.shields.io/badge/python-3.8-blue.svg?&logo=python&logoColor=yellow) [![codecov](https://codecov.io/gh/owid/data-utils-py/branch/main/graph/badge.svg?token=2emTQEJedw)](https://codecov.io/gh/owid/data-utils-py)
 
 `data-utils` is a library to support the work of the Data Team at Our World in Data.

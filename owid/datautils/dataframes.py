@@ -69,8 +69,10 @@ def compare(
     # Compare, column by column, the elements of the two dataframes.
     compared = pd.DataFrame()
     for col in columns:
-        if (df1[col].dtype == object) or (df2[col].dtype == object):
-            # Apply a direct comparison for strings.
+        if (df1[col].dtype in (object, "category")) or (
+            df2[col].dtype in (object, "category")
+        ):
+            # Apply a direct comparison for strings or categories
             compared_row = df1[col].values == df2[col].values
         else:
             # For numeric data, consider them equal within certain absolute and relative tolerances.
@@ -265,7 +267,7 @@ def groupby_agg(
         Grouped dataframe after applying aggregations.
 
     """
-    if type(groupby_columns) == str:
+    if isinstance(groupby_columns, str):
         groupby_columns = [groupby_columns]
 
     if aggregations is None:
@@ -274,30 +276,62 @@ def groupby_agg(
         ]
         aggregations = {column: "sum" for column in columns_to_aggregate}
 
+    # Default groupby arguments, `observed` makes sure the final dataframe
+    # does not explode with NaNs
+    groupby_kwargs = {
+        "dropna": False,
+        "observed": True,
+    }
+
     # Group by and aggregate.
-    grouped = df.groupby(groupby_columns, dropna=False).agg(aggregations)
+    grouped = df.groupby(groupby_columns, **groupby_kwargs).agg(aggregations)  # type: ignore
 
     if num_allowed_nans is not None:
         # Count the number of missing values in each group.
-        num_nans_detected = df.groupby(groupby_columns, dropna=False).agg(
-            lambda x: pd.isnull(x).sum()
+        num_nans_detected = count_missing_in_groups(
+            df, groupby_columns, **groupby_kwargs
         )
+
         # Make nan any aggregation where there were too many missing values.
         grouped = grouped[num_nans_detected <= num_allowed_nans]
 
     if frac_allowed_nans is not None:
         # Count the number of missing values in each group.
-        num_nans_detected = df.groupby(groupby_columns, dropna=False).agg(
-            lambda x: pd.isnull(x).sum()
+        num_nans_detected = count_missing_in_groups(
+            df, groupby_columns, **groupby_kwargs
         )
         # Count number of elements in each group (avoid using 'count' method, which ignores nans).
-        num_elements = df.groupby(groupby_columns, dropna=False).size()
+        num_elements = df.groupby(groupby_columns, **groupby_kwargs).size()  # type: ignore
         # Make nan any aggregation where there were too many missing values.
         grouped = grouped[
             num_nans_detected.divide(num_elements, axis="index") <= frac_allowed_nans
         ]
 
     return grouped
+
+
+def count_missing_in_groups(
+    df: pd.DataFrame, groupby_columns: List[str], **kwargs: Any
+) -> pd.DataFrame:
+    """Count the number of missing values in each group.
+
+    Faster version of
+    ```
+    num_nans_detected = df.groupby(groupby_columns, **groupby_kwargs).agg(
+        lambda x: pd.isnull(x).sum()
+    )
+    ```
+    """
+    nan_columns = [c for c in df.columns if c not in groupby_columns]
+
+    num_nans_detected = (
+        df[nan_columns]
+        .isnull()
+        .groupby([df[c] for c in groupby_columns], **kwargs)
+        .sum()
+    )
+
+    return cast(pd.DataFrame, num_nans_detected)
 
 
 def multi_merge(

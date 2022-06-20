@@ -692,6 +692,38 @@ class TestGroupbyAggregate:
             df2=df_out,
         )
 
+    def test_categorical_agg(self):
+        # Make sure grouped object only contains observed combinations of categories
+        df_in = pd.DataFrame(
+            {
+                "col_01": ["a", "a", "c"],
+                "col_02": ["b", "b", "d"],
+                "col_03": [1, 2, 3],
+            }
+        ).astype(
+            {
+                "col_01": "category",
+                "col_02": "category",
+            }
+        )
+
+        df_out = pd.DataFrame(
+            {"col_01": ["a", "c"], "col_02": ["b", "d"], "col_03": [3, 3]}
+        ).astype(
+            {
+                "col_01": "category",
+                "col_02": "category",
+            }
+        )
+
+        df_exp = dataframes.groupby_agg(df_in, ["col_01", "col_02"]).reset_index()
+
+        assert dataframes.are_equal(
+            df1=df_exp,
+            df2=df_out,
+            verbose=True,
+        )[0]
+
 
 class TestMultiMerge:
     df1 = pd.DataFrame({"col_01": ["aa", "ab", "ac"], "col_02": ["ba", "bb", "bc"]})

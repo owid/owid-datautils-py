@@ -69,8 +69,10 @@ def compare(
     # Compare, column by column, the elements of the two dataframes.
     compared = pd.DataFrame()
     for col in columns:
-        if (df1[col].dtype == object) or (df2[col].dtype == object):
-            # Apply a direct comparison for strings.
+        if (df1[col].dtype in (object, "category")) or (
+            df2[col].dtype in (object, "category")
+        ):
+            # Apply a direct comparison for strings or categories
             compared_row = df1[col].values == df2[col].values
         else:
             # For numeric data, consider them equal within certain absolute and relative tolerances.

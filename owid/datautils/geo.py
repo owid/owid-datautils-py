@@ -1,12 +1,13 @@
 """Utils related to geographical entities."""
 
+import functools
 import json
 import warnings
-from typing import List, Union, Optional, Dict, Any, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 import numpy as np
-import pandas as pd
 import owid.catalog as catalog
+import pandas as pd
 
 from owid.datautils.common import ExceptionFromDocstring, warn_on_list_of_entities
 from owid.datautils.dataframes import groupby_agg, map_series
@@ -27,6 +28,7 @@ FRAC_ALLOWED_NANS_PER_YEAR = 0.2
 NUM_ALLOWED_NANS_PER_YEAR = None
 
 
+@functools.lru_cache
 def _load_population() -> pd.DataFrame:
     population = (
         catalog.find("population", namespace="owid", dataset="key_indicators")
@@ -37,6 +39,7 @@ def _load_population() -> pd.DataFrame:
     return cast(pd.DataFrame, population)
 
 
+@functools.lru_cache
 def _load_countries_regions() -> pd.DataFrame:
     countries_regions = catalog.find(
         "countries_regions", dataset="reference", namespace="owid"
@@ -45,6 +48,7 @@ def _load_countries_regions() -> pd.DataFrame:
     return cast(pd.DataFrame, countries_regions)
 
 
+@functools.lru_cache
 def _load_income_groups() -> pd.DataFrame:
     income_groups_found = catalog.find(
         table="wb_income_group", dataset="wb_income", namespace="wb"

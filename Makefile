@@ -12,7 +12,7 @@ SRC = owid tests
 
 
 report: report-coverage report-linting report-server-launch
-	@poetry run python -m http.server reports/
+	@poetry run python -m http.server .reports/
 
 check-typing: .venv
 	@echo '==> Checking types'

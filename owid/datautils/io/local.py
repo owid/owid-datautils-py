@@ -66,7 +66,7 @@ def save_json(data: Any, json_file: Union[str, Path], **kwargs: Any) -> None:
         Data to be stored in a json file.
     json_file : str
         Path to output json file.
-    **kwargs
+    kwargs:
         Additional keyword arguments for json.dump (e.g. indent=4, sort_keys=True).
 
     """

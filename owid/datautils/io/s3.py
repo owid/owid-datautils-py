@@ -47,11 +47,12 @@ class S3:
         Parameters
         ----------
         s3_path : str
-            Path to S3 in format s3://mybucket/path/to/folder
+             Path to S3 in format s3://mybucket/path/to/folder
+
         Returns
         -------
-        objects_list : list
-            Objects found in folder.
+        list
+             Objects found in folder.
         """
         if not s3_path.endswith("/"):
             s3_path += "/"
@@ -86,15 +87,21 @@ class S3:
         """
         Upload file to Walden.
 
-        Args:
-            local_path: Local path to file.
-            s3_path: File location to load object from. e.g.
-                    s3://mybucket.nyc3.digitaloceanspaces.com/myfile.csv
-                    or
-                    s3://mybucket/myfile.csv
-            public: Set to True to expose the file to the public (read only).
+        Parameters
+        ----------
+        local_path : str
+            Local path to file.
+        s3_path : str
+            File location to load object from. e.g.
+                s3://mybucket.nyc3.digitaloceanspaces.com/myfile.csv
+                or
+                s3://mybucket/myfile.csv
+        public : bool
+            Set to True to expose the file to the public (read only).
 
-        Returns:
+        Returns
+        -------
+        str
             URL of the file (`https://` if public, `s3://` if private)
         """
         if not quiet:
@@ -128,9 +135,12 @@ class S3:
     ) -> None:
         """Download file from S3.
 
-        Args:
-            s3_path: File location to load object from.
-            local_path: Path where to save file locally.
+        Parameters
+        ----------
+        s3_path : str
+            File location to load object from.
+        local_path : str
+            Path where to save file locally.
         """
         if not quiet:
             logger.info("Downloading from S3…")
@@ -153,16 +163,22 @@ class S3:
     ) -> None:
         """Upload an object to S3, as a file.
 
-        Args:
-            obj (object): Object to upload to S3. Currently:
-                            - dict -> JSON
-                            - str -> text
-                            - DataFrame -> CSV/XLSX/XLS/ZIP depending on `s3_path` value.
-            s3_path (srt): Object S3 file destination.
-            public (bool, optional): Set to True if file is to be publicly accessed. Defaults to False.
+        Parameters
+        ----------
+        obj: object
+            Object to upload to S3. Currently:
+                - dict -> JSON
+                - str -> text
+                - DataFrame -> CSV/XLSX/XLS/ZIP depending on `s3_path` value.
+        s3_path : srt
+            Object S3 file destination.
+        public : bool, optional)
+            Set to True if file is to be publicly accessed. Defaults to False.
 
-        Raises:
-            ValueError: If file format is not supported.
+        Raises
+        ------
+        ValueError
+            If file format is not supported.
         """
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = os.path.join(tmpdir, "file")
@@ -185,18 +201,23 @@ class S3:
                     )
             else:
                 raise ValueError(
-                    f"Type of `obj` is not supported ({type(obj).__name__}). Supported are json, str and pd.DataFrame"
+                    f"Type of `obj` is not supported ({type(obj).__name__}). Supported"
+                    " are json, str and pd.DataFrame"
                 )
             self.upload_to_s3(local_path=output_path, s3_path=s3_path, public=public)
 
     def obj_from_s3(self, s3_path: str, **kwargs: Any) -> S3_OBJECT:
         """Load object from s3 location.
 
-        Args:
-            s3_path (str): File location to load object from.
+        Parameters
+        ----------
+        s3_path : str)
+            File location to load object from.
 
-        Returns:
-            object: File loaded as object. Currently JSON -> dict, CSV/XLS/XLSV -> pd.DataFrame, general -> str
+        Returns
+        -------
+        object
+            File loaded as object. Currently JSON -> dict, CSV/XLS/XLSV -> pd.DataFrame, general -> str
         """
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = os.path.join(tmpdir, "file")
@@ -215,11 +236,14 @@ class S3:
     def get_metadata(self, s3_path: str) -> Any:
         """Get metadata from file `s3_path`.
 
-        Args:
+        Parameters
+        ----------
             s3_path (str): Path to S3 file.
 
-        Returns:
-            dict: Metadata
+        Returns
+        -------
+        dict
+            Metadata
         """
         bucket_name, s3_file = s3_path_to_bucket_key(s3_path)
         response = self.client.head_object(Bucket=bucket_name, Key=s3_file)

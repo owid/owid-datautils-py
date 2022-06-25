@@ -315,12 +315,12 @@ def count_missing_in_groups(
 ) -> pd.DataFrame:
     """Count the number of missing values in each group.
 
-    Faster version of
-    ```
-    num_nans_detected = df.groupby(groupby_columns, **groupby_kwargs).agg(
+    Faster version of:
+
+    >>> num_nans_detected = df.groupby(groupby_columns, **groupby_kwargs).agg(
         lambda x: pd.isnull(x).sum()
     )
-    ```
+
     """
     nan_columns = [c for c in df.columns if c not in groupby_columns]
 

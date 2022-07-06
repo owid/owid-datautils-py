@@ -223,6 +223,238 @@ class TestAreDataFramesEqual:
         )[0]
 
 
+class TestDataFrameHighLevelDiff:
+    def test_simple_equal_dataframes_are_equal(self):
+        df = pd.DataFrame(
+            {
+                "year": [2001, 2003, 2003, 2003, 2002, 2002],
+                "value_01": [1, 2, 3, 4, 5, 6],
+            }
+        )
+        diff = dataframes.DataFrameHighLevelDiff(
+            df,
+            df,
+            absolute_tolerance=1e-8,
+            relative_tolerance=0.5,
+        )
+        assert any(diff.columns_missing_in_df1) == False
+        assert any(diff.columns_missing_in_df2) == False
+        assert any(diff.index_columns_missing_in_df1) == False
+        assert any(diff.index_columns_missing_in_df2) == False
+        assert any(diff.index_values_missing_in_df1) == False
+        assert any(diff.index_values_missing_in_df2) == False
+        assert any(diff.duplicate_index_values_in_df1) == False
+        assert any(diff.duplicate_index_values_in_df2) == False
+        assert diff.are_structurally_equal == True
+        assert diff.are_equal
+
+    def test_more_complex_equal_dataframes_are_equal(self):
+        df = pd.DataFrame(
+            {
+                "year": [2001, 2002, 2003, 2004, 2005, 2006] * 2,
+                "country": ["a"] * 6 + ["b"] * 6,
+                "value_01": [1, 2, 3, 4, 5, 6] * 2,
+            }
+        )
+        df.set_index(["year", "country"], inplace=True)
+        diff = dataframes.DataFrameHighLevelDiff(
+            df,
+            df,
+            absolute_tolerance=1e-8,
+            relative_tolerance=0.5,
+        )
+        assert any(diff.columns_missing_in_df1) == False
+        assert any(diff.columns_missing_in_df2) == False
+        assert any(diff.index_columns_missing_in_df1) == False
+        assert any(diff.index_columns_missing_in_df2) == False
+        assert any(diff.index_values_missing_in_df1) == False
+        assert any(diff.index_values_missing_in_df2) == False
+        assert any(diff.duplicate_index_values_in_df1) == False
+        assert any(diff.duplicate_index_values_in_df2) == False
+        assert diff.are_structurally_equal == True
+        assert diff.are_equal
+
+    def test_detects_duplicate_index_values(self):
+        df = pd.DataFrame(
+            {
+                "year": [2001] * 12,
+                "country": ["a"] * 6 + ["b"] * 6,
+                "value_01": [1, 2, 3, 4, 5, 6] * 2,
+            }
+        )
+        df.set_index(["year", "country"], inplace=True)
+        diff = dataframes.DataFrameHighLevelDiff(
+            df,
+            df,
+            absolute_tolerance=1e-8,
+            relative_tolerance=0.5,
+        )
+        assert any(diff.columns_missing_in_df1) == False
+        assert any(diff.columns_missing_in_df2) == False
+        assert any(diff.index_columns_missing_in_df1) == False
+        assert any(diff.index_columns_missing_in_df2) == False
+        assert any(diff.index_values_missing_in_df1) == False
+        assert any(diff.index_values_missing_in_df2) == False
+        assert any(diff.duplicate_index_values_in_df1) == True
+        assert any(diff.duplicate_index_values_in_df2) == True
+        assert diff.are_structurally_equal == False
+        assert not diff.are_equal
+
+    def test_detects_missing_index(self):
+        df = pd.DataFrame(
+            {
+                "year": [2001, 2002, 2003, 2004, 2005, 2006] * 2,
+                "country": ["a"] * 6 + ["b"] * 6,
+                "value_01": [1, 2, 3, 4, 5, 6] * 2,
+            }
+        )
+        df2 = df.set_index(["year", "country"], inplace=False)
+        diff = dataframes.DataFrameHighLevelDiff(
+            df,
+            df2,
+            absolute_tolerance=1e-8,
+            relative_tolerance=0.5,
+        )
+        assert any(diff.columns_missing_in_df1) == False
+        assert any(diff.columns_missing_in_df2) == True
+        assert any(diff.index_columns_missing_in_df1) == True
+        assert any(diff.index_columns_missing_in_df2) == False
+        assert any(diff.index_values_missing_in_df1) == True
+        assert any(diff.index_values_missing_in_df2) == True
+        assert any(diff.duplicate_index_values_in_df1) == False
+        assert any(diff.duplicate_index_values_in_df2) == False
+        assert diff.are_structurally_equal == False
+        assert not diff.are_equal
+
+    def test_detects_missing_index_values(self):
+        df = pd.DataFrame(
+            {
+                "year": [2001, 2002, 2003, 2004, 2005, 2006] * 2,
+                "country": ["a"] * 6 + ["b"] * 6,
+                "value_01": [1, 2, 3, 4, 5, 6] * 2,
+            }
+        )
+        df.set_index(["year", "country"], inplace=True)
+        df2 = df.copy()
+        df2.drop((2006, "b"), inplace=True)
+        diff = dataframes.DataFrameHighLevelDiff(
+            df,
+            df2,
+            absolute_tolerance=1e-8,
+            relative_tolerance=0.5,
+        )
+        assert any(diff.columns_missing_in_df1) == False
+        assert any(diff.columns_missing_in_df2) == False
+        assert any(diff.index_columns_missing_in_df1) == False
+        assert any(diff.index_columns_missing_in_df2) == False
+        assert any(diff.index_values_missing_in_df1) == False
+        assert any(diff.index_values_missing_in_df2) == True
+        assert any(diff.duplicate_index_values_in_df1) == False
+        assert any(diff.duplicate_index_values_in_df2) == False
+        assert diff.are_structurally_equal == False
+        assert not diff.are_equal
+
+    def test_detects_data_changes(self):
+        df = pd.DataFrame(
+            {
+                "year": [2001, 2002, 2003, 2004, 2005, 2006] * 2,
+                "country": ["a"] * 6 + ["b"] * 6,
+                "value_01": [1, 2, 3, 4, 5, 6] * 2,
+            }
+        )
+        df.set_index(["year", "country"], inplace=True)
+        df2 = df.copy()
+        df2.loc[(2006, "b"), "value_01"] = 7
+        diff = dataframes.DataFrameHighLevelDiff(
+            df,
+            df2,
+            absolute_tolerance=1e-8,
+            relative_tolerance=0.05,
+        )
+        assert any(diff.columns_missing_in_df1) == False
+        assert any(diff.columns_missing_in_df2) == False
+        assert any(diff.index_columns_missing_in_df1) == False
+        assert any(diff.index_columns_missing_in_df2) == False
+        assert any(diff.index_values_missing_in_df1) == False
+        assert any(diff.index_values_missing_in_df2) == False
+        assert any(diff.duplicate_index_values_in_df1) == False
+        assert any(diff.duplicate_index_values_in_df2) == False
+        assert diff.are_structurally_equal == True
+        assert not diff.are_equal
+        assert diff.value_differences is not None and diff.value_differences.shape == (
+            1,
+            1,
+        )
+        assert type(diff.value_differences.index) == pd.MultiIndex
+        assert list(diff.rows_with_differences) == [(2006, "b")]
+        assert list(diff.columns_with_differences) == ["value_01"]
+
+    def test_detects_data_changes_with_enough_tolerance(self):
+        df = pd.DataFrame(
+            {
+                "year": [2001, 2002, 2003, 2004, 2005, 2006] * 2,
+                "country": ["a"] * 6 + ["b"] * 6,
+                "value_01": [1, 2, 3, 4, 5, 6] * 2,
+            }
+        )
+        df.set_index(["year", "country"], inplace=True)
+        df2 = df.copy()
+        df2.loc[(2006, "b"), "value_01"] = 7
+        diff = dataframes.DataFrameHighLevelDiff(
+            df,
+            df2,
+            absolute_tolerance=1e-8,
+            relative_tolerance=0.3,
+        )
+        assert any(diff.columns_missing_in_df1) == False
+        assert any(diff.columns_missing_in_df2) == False
+        assert any(diff.index_columns_missing_in_df1) == False
+        assert any(diff.index_columns_missing_in_df2) == False
+        assert any(diff.index_values_missing_in_df1) == False
+        assert any(diff.index_values_missing_in_df2) == False
+        assert any(diff.duplicate_index_values_in_df1) == False
+        assert any(diff.duplicate_index_values_in_df2) == False
+        assert diff.are_structurally_equal == True
+        assert diff.are_equal
+        assert diff.value_differences is None
+
+    def test_detects_data_changes2(self):
+        df = pd.DataFrame(
+            {
+                "year": [2001, 2002, 2003, 2004, 2005, 2006] * 2,
+                "country": ["a"] * 6 + ["b"] * 6,
+                "value_01": [1, 2, 3, 4, 5, 6] * 2,
+            }
+        )
+        df.set_index(["year", "country"], inplace=True)
+        df2 = df.copy()
+        df2.loc[(2006, "b"), "value_01"] = 7
+        df2.loc[(2006, "a"), "value_01"] = 8
+        diff = dataframes.DataFrameHighLevelDiff(
+            df,
+            df2,
+            absolute_tolerance=1e-8,
+            relative_tolerance=0.05,
+        )
+        assert any(diff.columns_missing_in_df1) == False
+        assert any(diff.columns_missing_in_df2) == False
+        assert any(diff.index_columns_missing_in_df1) == False
+        assert any(diff.index_columns_missing_in_df2) == False
+        assert any(diff.index_values_missing_in_df1) == False
+        assert any(diff.index_values_missing_in_df2) == False
+        assert any(diff.duplicate_index_values_in_df1) == False
+        assert any(diff.duplicate_index_values_in_df2) == False
+        assert diff.are_structurally_equal == True
+        assert not diff.are_equal
+        assert diff.value_differences is not None and diff.value_differences.shape == (
+            2,
+            1,
+        )
+        assert type(diff.value_differences.index) == pd.MultiIndex
+        assert list(diff.rows_with_differences) == [(2006, "a"), (2006, "b")]
+        assert list(diff.columns_with_differences) == ["value_01"]
+
+
 class TestGroupbyAggregate:
     def test_default_aggregate_single_groupby_column_as_string(self):
         df_in = pd.DataFrame(

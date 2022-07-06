@@ -218,6 +218,179 @@ def are_equal(
     return equal, compared
 
 
+class DataFrameHighLevelDiff:
+    """Class for comparing two dataframes.
+
+    It assumes that all nans are identical, and compares floats by means of certain absolute and relative tolerances.
+    Construct this class by passing two dataframes of possibly different shape. Then check the are_structurally_equal
+    property to see if the column and row sets of the two dataframes match and/or check the are_equal flag to also
+    check for equality of values.
+
+    For cases where there is a difference, various member fields on this class give indications of what is different
+    (e.g. columns missing in dataframe 1 or 2, index values missing in dataframe 1 or 2, etc.).
+
+    Parameters
+    ----------
+    df1 : pd.DataFrame
+        First dataframe.
+    df2 : pd.DataFrame
+        Second dataframe.
+    absolute_tolerance : float
+        Absolute tolerance to assume in the comparison of each cell in the dataframes. A value a of an element in df1 is
+        considered equal to the corresponding element b at the same position in df2, if:
+        abs(a - b) <= absolute_tolerance
+    relative_tolerance : float
+        Relative tolerance to assume in the comparison of each cell in the dataframes. A value a of an element in df1 is
+        considered equal to the corresponding element b at the same position in df2, if:
+        abs(a - b) / abs(b) <= relative_tolerance
+
+    """
+
+    df1: pd.DataFrame
+    df2: pd.DataFrame
+    columns_missing_in_df1: List[str]
+    columns_missing_in_df2: List[str]
+    index_columns_missing_in_df1: List[str]
+    index_columns_missing_in_df2: List[str]
+    index_values_missing_in_df1: pd.Index
+    index_values_missing_in_df2: pd.Index
+    duplicate_index_values_in_df1: pd.Series
+    duplicate_index_values_in_df2: pd.Series
+    value_differences: Optional[pd.DataFrame]
+
+    def __init__(
+        self,
+        df1: pd.DataFrame,
+        df2: pd.DataFrame,
+        absolute_tolerance: float,
+        relative_tolerance: float,
+    ):
+        self.df1 = df1
+        self.df2 = df2
+        self.absolute_tolerance = absolute_tolerance
+        self.relative_tolerance = relative_tolerance
+        self.diff()
+
+    @property
+    def columns_with_differences(self) -> Any:
+        """Return the columns that are different in the two dataframes.
+
+        This will be an array of index values. If the index is a MultiIndex, the index values will be tuples.
+        """
+        if self.value_differences is None:
+            return pd.array([])
+        return self.value_differences.columns.values
+
+    @property
+    def rows_with_differences(self) -> Any:
+        """Return the row indices that are different in the two dataframes.
+
+        This will be an array of index values. If the index is a MultiIndex, the index values will be tuples.
+        """
+        if self.value_differences is None:
+            return pd.array([])
+        return self.value_differences.index.values
+
+    def diff(self) -> None:
+        """Diff the two dataframes.
+
+        This can be a somewhat slow operation
+        """
+        self.columns_missing_in_df1 = sorted(
+            set(self.df2.columns) - set(self.df1.columns)
+        )
+        self.columns_missing_in_df2 = sorted(
+            set(self.df1.columns) - set(self.df2.columns)
+        )
+        self.index_columns_missing_in_df1 = sorted(
+            set(self.df2.index.names) - set(self.df1.index.names)
+        )
+        self.index_columns_missing_in_df2 = sorted(
+            set(self.df1.index.names) - set(self.df2.index.names)
+        )
+        self.index_values_missing_in_df1 = self.df2.index.difference(self.df1.index)
+        self.index_values_missing_in_df2 = self.df1.index.difference(self.df2.index)
+        self.duplicate_index_values_in_df1 = self.df1[
+            self.df1.index.duplicated()
+        ].index.values
+        self.duplicate_index_values_in_df2 = self.df2[
+            self.df2.index.duplicated()
+        ].index.values
+        if self.are_structurally_equal:
+            # We don't use the compare function here from above because it builds a new
+            # dataframe and we want to leave indices intact so we can know which rows and columns
+            # were different once we drop the ones with no differences
+            diffs = self.df1.eq(self.df2)
+
+            # Eq above does not take tolerance into account so compare again with tolerance
+            # for columns that are numeric. this could probably be sped up with a check on any on
+            # the column first but would have to be benchmarked
+            for col in diffs.columns:
+                if (self.df1[col].dtype in (object, "category")) or (
+                    self.df2[col].dtype in (object, "category")
+                ):
+                    # Apply a direct comparison for strings or categories
+                    pass
+                else:
+                    # For numeric data, consider them equal within certain absolute and relative tolerances.
+                    compared_values = np.isclose(
+                        self.df1[col].values,
+                        self.df2[col].values,
+                        atol=self.absolute_tolerance,
+                        rtol=self.relative_tolerance,
+                    )
+                    # Treat nans as equal.
+                    compared_values[
+                        pd.isnull(self.df1[col].values)
+                        & pd.isnull(self.df2[col].values)
+                    ] = True
+                    diffs[col] = compared_values
+
+            # We now have a dataframe with the same shape and indices as df1 and df2, filled with
+            # True where the values are the same. We want to use true for different values, so invert
+            # element-wise now
+            diffs = ~diffs
+
+            if diffs.empty:
+                self.value_differences = None
+            else:
+                # Get a copy of diffs with all rows dropped where all values in a row are False
+                # (i.e. where df1 and df2 have identical values for all columns)
+                rows_with_diffs = diffs[diffs.any(axis=1)]
+                if rows_with_diffs.empty or not rows_with_diffs.any().any():
+                    self.value_differences = None
+                else:
+                    # Now figure out all columns where there is at least one difference
+                    columns_with_diffs = diffs.any(axis=0)
+                    if not columns_with_diffs.any():
+                        self.value_differences = None
+                    else:
+                        # Here we drop the columns that did not have differences. We are left with a dataframe
+                        # with the original indices and only the rows and columns let with differences.
+                        self.value_differences = rows_with_diffs.loc[
+                            :, columns_with_diffs
+                        ]
+
+    @property
+    def are_structurally_equal(self) -> bool:
+        """Check if the two dataframes are structurally equal (i.e. same columns, same index values, ...)."""
+        return not (
+            any(self.columns_missing_in_df1)
+            or any(self.columns_missing_in_df2)
+            or any(self.index_columns_missing_in_df1)
+            or any(self.index_columns_missing_in_df2)
+            or any(self.index_values_missing_in_df1)
+            or any(self.index_values_missing_in_df2)
+            or any(self.duplicate_index_values_in_df1)
+            or any(self.duplicate_index_values_in_df2)
+        )
+
+    @property
+    def are_equal(self) -> bool:
+        """Check if the two dataframes are equal, both structurally and cell-wise."""
+        return self.are_structurally_equal and self.value_differences is None
+
+
 def groupby_agg(
     df: pd.DataFrame,
     groupby_columns: Union[List[str], str],

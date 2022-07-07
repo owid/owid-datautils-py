@@ -906,3 +906,16 @@ class TestApplyOnCategoricals:
             [df.x, df.y], lambda x, y: str(x + "|" + y)
         )
         assert list(out.categories) == ["a|b", "b|c"]
+
+    def test_mask(self):
+        desc = pd.Series(["a", "b", np.nan]).astype("category")
+        mask = pd.Series([False, True, True])
+
+        new_desc = dataframes.apply_on_categoricals(
+            [desc, mask.astype("category")],
+            lambda desc, mask: f"{'' if pd.isna(desc) else desc} per capita"
+            if mask
+            else f"{desc}",
+        )
+
+        assert list(new_desc) == ["a", "b per capita", " per capita"]

@@ -223,7 +223,155 @@ class TestAreDataFramesEqual:
         )[0]
 
 
-class TestDataFrameHighLevelDiff:
+class TestAreDataFramesEqualWithHighLevelDiff:
+    def are_equal(self, df1: pd.DataFrame, df2: pd.DataFrame, **kwargs: float) -> bool:
+        return dataframes.HighLevelDiff(df1, df2, **kwargs).are_equal
+
+    def test_on_equal_dataframes_with_one_integer_column(self):
+        assert self.are_equal(
+            df1=pd.DataFrame({"col_01": [1, 2, 3]}),
+            df2=pd.DataFrame({"col_01": [1, 2, 3]}),
+        )
+
+    def test_on_almost_equal_dataframes_but_differing_by_one_element(self):
+        assert not self.are_equal(
+            df1=pd.DataFrame({"col_01": [1, 2, 3]}),
+            df2=pd.DataFrame({"col_01": [1, 2, 0]}),
+        )
+
+    def test_on_almost_equal_dataframes_but_differing_by_type(self):
+        assert not self.are_equal(
+            df1=pd.DataFrame({"col_01": [1, 2, 3]}),
+            df2=pd.DataFrame({"col_01": [1, 2, 3.0]}),
+        )
+
+    def test_on_equal_dataframes_containing_nans(self):
+        assert self.are_equal(
+            df1=pd.DataFrame({"col_01": [1, 2, np.nan]}),
+            df2=pd.DataFrame({"col_01": [1, 2, np.nan]}),
+        )
+
+    def test_on_equal_dataframes_containing_only_nans(self):
+        assert self.are_equal(
+            df1=pd.DataFrame({"col_01": [np.nan, np.nan]}),
+            df2=pd.DataFrame({"col_01": [np.nan, np.nan]}),
+        )
+
+    def test_on_equal_dataframes_both_empty(self):
+        assert self.are_equal(df1=pd.DataFrame(), df2=pd.DataFrame())
+
+    def test_on_equal_dataframes_with_various_types_of_columns(self):
+        assert self.are_equal(
+            df1=pd.DataFrame(
+                {
+                    "col_01": [1, 2],
+                    "col_02": [0.1, 0.2],
+                    "col_03": ["1", "2"],
+                    "col_04": [True, False],
+                }
+            ),
+            df2=pd.DataFrame(
+                {
+                    "col_01": [1, 2],
+                    "col_02": [0.1, 0.2],
+                    "col_03": ["1", "2"],
+                    "col_04": [True, False],
+                }
+            ),
+        )
+
+    def test_on_almost_equal_dataframes_but_columns_sorted_differently(self):
+        assert not self.are_equal(
+            df1=pd.DataFrame(
+                {
+                    "col_01": [1, 2],
+                    "col_02": [0.1, 0.2],
+                    "col_03": ["1", "2"],
+                    "col_04": [True, False],
+                }
+            ),
+            df2=pd.DataFrame(
+                {
+                    "col_02": [0.1, 0.2],
+                    "col_01": [1, 2],
+                    "col_03": ["1", "2"],
+                    "col_04": [True, False],
+                }
+            ),
+        )
+
+    def test_on_unequal_dataframes_with_all_columns_different(self):
+        assert not self.are_equal(
+            df1=pd.DataFrame({"col_01": [1, 2], "col_02": [0.1, 0.2]}),
+            df2=pd.DataFrame({"col_03": [0.1, 0.2], "col_04": [1, 2]}),
+        )
+
+    def test_on_unequal_dataframes_with_some_common_columns(self):
+        assert not self.are_equal(
+            df1=pd.DataFrame({"col_01": [1, 2], "col_02": [0.1, 0.2]}),
+            df2=pd.DataFrame({"col_01": [1, 2], "col_03": [1, 2]}),
+        )
+
+    def test_on_equal_dataframes_given_large_absolute_tolerance(self):
+        assert self.are_equal(
+            df1=pd.DataFrame({"col_01": [10, 20]}),
+            df2=pd.DataFrame({"col_01": [11, 21]}),
+            absolute_tolerance=1,
+            relative_tolerance=1e-8,
+        )
+
+    def test_on_unequal_dataframes_given_large_absolute_tolerance(self):
+        assert not self.are_equal(
+            df1=pd.DataFrame({"col_01": [10, 20]}),
+            df2=pd.DataFrame({"col_01": [11, 21]}),
+            absolute_tolerance=0.9,
+            relative_tolerance=1e-8,
+        )
+
+    def test_on_equal_dataframes_given_large_relative_tolerance(self):
+        assert self.are_equal(
+            df1=pd.DataFrame({"col_01": [1]}),
+            df2=pd.DataFrame({"col_01": [2]}),
+            absolute_tolerance=1e-8,
+            relative_tolerance=0.5,
+        )
+
+    def test_on_unequal_dataframes_given_large_relative_tolerance(self):
+        assert not self.are_equal(
+            df1=pd.DataFrame({"col_01": [1]}),
+            df2=pd.DataFrame({"col_01": [2]}),
+            absolute_tolerance=1e-8,
+            relative_tolerance=0.49,
+        )
+
+    def test_on_equal_dataframes_with_non_numeric_indexes(self):
+        assert self.are_equal(
+            df1=pd.DataFrame({"col_01": [1, 2], "col_02": ["a", "b"]}).set_index(
+                "col_02"
+            ),
+            df2=pd.DataFrame({"col_01": [1, 2], "col_02": ["a", "b"]}).set_index(
+                "col_02"
+            ),
+        )
+
+    def test_on_dataframes_of_equal_values_but_different_indexes(self):
+        assert not self.are_equal(
+            df1=pd.DataFrame({"col_01": [1, 2], "col_02": ["a", "b"]}).set_index(
+                "col_02"
+            ),
+            df2=pd.DataFrame({"col_01": [1, 2], "col_02": ["a", "c"]}).set_index(
+                "col_02"
+            ),
+        )
+
+    def test_on_dataframes_with_object_columns_with_nans(self):
+        assert self.are_equal(
+            df1=pd.DataFrame({"col_01": [np.nan, "b", "c"]}),
+            df2=pd.DataFrame({"col_01": [np.nan, "b", "c"]}),
+        )
+
+
+class TestHighLevelDiff:
     def test_simple_equal_dataframes_are_equal(self):
         df = pd.DataFrame(
             {
@@ -231,7 +379,7 @@ class TestDataFrameHighLevelDiff:
                 "value_01": [1, 2, 3, 4, 5, 6],
             }
         )
-        diff = dataframes.DataFrameHighLevelDiff(
+        diff = dataframes.HighLevelDiff(
             df,
             df,
             absolute_tolerance=1e-8,
@@ -257,7 +405,7 @@ class TestDataFrameHighLevelDiff:
             }
         )
         df.set_index(["year", "country"], inplace=True)
-        diff = dataframes.DataFrameHighLevelDiff(
+        diff = dataframes.HighLevelDiff(
             df,
             df,
             absolute_tolerance=1e-8,
@@ -283,7 +431,7 @@ class TestDataFrameHighLevelDiff:
             }
         )
         df.set_index(["year", "country"], inplace=True)
-        diff = dataframes.DataFrameHighLevelDiff(
+        diff = dataframes.HighLevelDiff(
             df,
             df,
             absolute_tolerance=1e-8,
@@ -309,7 +457,7 @@ class TestDataFrameHighLevelDiff:
             }
         )
         df2 = df.set_index(["year", "country"], inplace=False)
-        diff = dataframes.DataFrameHighLevelDiff(
+        diff = dataframes.HighLevelDiff(
             df,
             df2,
             absolute_tolerance=1e-8,
@@ -337,7 +485,7 @@ class TestDataFrameHighLevelDiff:
         df.set_index(["year", "country"], inplace=True)
         df2 = df.copy()
         df2.drop((2006, "b"), inplace=True)
-        diff = dataframes.DataFrameHighLevelDiff(
+        diff = dataframes.HighLevelDiff(
             df,
             df2,
             absolute_tolerance=1e-8,
@@ -365,7 +513,7 @@ class TestDataFrameHighLevelDiff:
         df.set_index(["year", "country"], inplace=True)
         df2 = df.copy()
         df2.loc[(2006, "b"), "value_01"] = 7
-        diff = dataframes.DataFrameHighLevelDiff(
+        diff = dataframes.HighLevelDiff(
             df,
             df2,
             absolute_tolerance=1e-8,
@@ -400,7 +548,7 @@ class TestDataFrameHighLevelDiff:
         df.set_index(["year", "country"], inplace=True)
         df2 = df.copy()
         df2.loc[(2006, "b"), "value_01"] = 7
-        diff = dataframes.DataFrameHighLevelDiff(
+        diff = dataframes.HighLevelDiff(
             df,
             df2,
             absolute_tolerance=1e-8,
@@ -430,7 +578,7 @@ class TestDataFrameHighLevelDiff:
         df2 = df.copy()
         df2.loc[(2006, "b"), "value_01"] = 7
         df2.loc[(2006, "a"), "value_01"] = 8
-        diff = dataframes.DataFrameHighLevelDiff(
+        diff = dataframes.HighLevelDiff(
             df,
             df2,
             absolute_tolerance=1e-8,

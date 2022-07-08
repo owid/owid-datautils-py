@@ -459,7 +459,7 @@ def add_population_to_dataframe(
         Original dataframe after adding a column with population values.
 
     """
-    # Load population data and calculate per capita energy.
+    # Load population data.
     population = _load_population().rename(
         columns={
             "country": country_col,

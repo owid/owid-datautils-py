@@ -474,8 +474,10 @@ def apply_on_categoricals(
     for cat_codes in zip(*[s.cat.codes for s in cat_series]):
         if cat_codes not in seen:
             # add category
+            # -1 is a special code for missing values
             cat_values = [
-                s.cat.categories[code] for s, code in zip(cat_series, cat_codes)
+                s.cat.categories[code] if code != -1 else np.nan
+                for s, code in zip(cat_series, cat_codes)
             ]
             categories.append(func(*cat_values))
             seen[cat_codes] = len(categories) - 1

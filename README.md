@@ -1,14 +1,14 @@
-# data-utils
+# owid-datautils
 ![version](https://img.shields.io/badge/version-0.4.4-blue)
-![version](https://img.shields.io/badge/python-3.8|3.9|3.10-blue.svg?&logo=python&logoColor=yellow) [![codecov](https://codecov.io/gh/owid/data-utils-py/branch/main/graph/badge.svg?token=2emTQEJedw)](https://codecov.io/gh/owid/data-utils-py)
-[![Documentation Status](https://readthedocs.org/projects/owid-datautils/badge/?version=latest)](https://docs.owid.io/projects/datautils/en/latest/?badge=latest)
+![version](https://img.shields.io/badge/python-3.8|3.9|3.10-blue.svg?&logo=python&logoColor=yellow) [![codecov](https://codecov.io/gh/owid/owid-datautils-py/branch/main/graph/badge.svg?token=2emTQEJedw)](https://codecov.io/gh/owid/data-utils-py)
+[![Documentation Status](https://readthedocs.org/projects/owid-datautils/badge/?version=latest)](https://docs.owid.io/projects/owid-datautils/en/latest/?badge=latest)
 
-**data-utils** is a library to support the work of the Data Team at Our World in Data.
+**owid-datautils** is a library to support the work of the Data Team at Our World in Data.
 
 ## Install
 Currently no release has been published. You can install the version under development directly from GitHub:
 ```
-pip install git+https://github.com/owid/data-utils-py
+pip install git+https://github.com/owid/owid-datautils-py
 ```
 
 

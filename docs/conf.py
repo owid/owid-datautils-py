@@ -78,7 +78,7 @@ autodoc_default_flags = [
 html_context = {
     "display_github": True,  # Integrate GitHub
     "github_user": "owid",  # Username
-    "github_repo": "data-utils-py",  # Repo name
+    "github_repo": "owid-datautils-py",  # Repo name
     "github_version": "main",  # Version
     "conf_py_path": "docs/",  # Path in the checkout to the docs root
 }

@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "owid-datautils"
-version = "0.4.4"
+version = "0.4.5"
 description = "Data utils library by the Data Team at Our World in Data"
 authors = ["Our World In Data <tech@ourworldindata.org>"]
 license = "MIT"
 packages = [{ include = "owid" }]
 readme = "README.md"
-repository = "https://github.com/owid/data-utils-py"
-homepage = "https://github.com/owid/data-utils-py"
+repository = "https://github.com/owid/owid-datautils-py"
+homepage = "https://github.com/owid/owid-datautils-py"
 keywords = ["our world in data", "data cleaning", "data processing", "data processing", "data utils"]
 
 
@@ -16,9 +16,9 @@ python = "^3.8"
 pandas = "^1.3.3"
 boto3 = "^1.21.16"
 structlog = "^21.5.0"
-colorama = "^0.4.4"
+colorama = "^0.4.5"
 mypy-boto3-s3 = "^1.21.23"
-owid-catalog = "^0.2.6"
+owid-catalog = "^0.3.0"
 
 
 [tool.poetry.dev-dependencies]

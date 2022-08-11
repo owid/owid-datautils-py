@@ -22,7 +22,7 @@ copyright = "2022, Our World In Data"
 author = "Our World In Data"
 
 # The full version, including alpha/beta/rc tags
-release = "0.4.4"
+release = "0.4.5"
 
 
 # -- General configuration ---------------------------------------------------
@@ -78,7 +78,7 @@ autodoc_default_flags = [
 html_context = {
     "display_github": True,  # Integrate GitHub
     "github_user": "owid",  # Username
-    "github_repo": "data-utils-py",  # Repo name
+    "github_repo": "owid-datautils-py",  # Repo name
     "github_version": "main",  # Version
     "conf_py_path": "docs/",  # Path in the checkout to the docs root
 }

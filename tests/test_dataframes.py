@@ -888,6 +888,16 @@ class TestMapSeries:
             series_out
         )
 
+    def test_mapping_to_nan(self):
+        # Even if make_unmapped_values_nan is False, we want to keep nan values if we are intentionally mapping a value
+        # to nan. For example, if the mapping is {"bad_value": np.nan} we want to keep that nan.
+        mapping = {2: 20, 3: np.nan}
+        series_in = pd.Series([1, 2, 3])
+        series_out = pd.Series([1, 20, np.nan])
+        assert dataframes.map_series(
+            series=series_in, mapping=mapping, make_unmapped_values_nan=False
+        ).equals(series_out)
+
 
 class TestConcatenate:
     def test_concat_categoricals(self):

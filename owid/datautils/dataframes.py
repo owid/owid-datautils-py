@@ -408,9 +408,20 @@ def map_series(
     series_mapped = series.map(mapping)
     if not make_unmapped_values_nan:
         # Rows that had values that were not in the mapping are now nan.
-        missing = series_mapped.isnull()
+        # Replace those nans with their original values, except if they were actually meant to be mapped to nan.
+        # For example, if {"bad_value": np.nan} was part of the mapping, do not replace those nans back to "bad_value".
+
+        # Detect values in the mapping that were intended to be mapped to nan.
+        values_mapped_to_nan = [
+            original_value
+            for original_value, target_value in mapping.items()
+            if pd.isnull(target_value)
+        ]
+
+        # Make a mask that is True for new nans that need to be replaced back to their original values.
+        missing = series_mapped.isnull() & (~series.isin(values_mapped_to_nan))
         if missing.any():
-            # Replace those nans with their original values.
+            # Replace those nans by their original values.
             series_mapped.loc[missing] = series[missing]
 
     if warn_on_missing_mappings:

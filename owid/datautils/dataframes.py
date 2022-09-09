@@ -497,3 +497,67 @@ def apply_on_categoricals(
         codes.append(seen[cat_codes])
 
     return cast(pd.Series, pd.Categorical.from_codes(codes, categories=categories))
+
+
+class CombinedDataFramesHaveRepeatedColumns(ExceptionFromDocstring):
+    """There are repeated columns, which should not happen when combining two overlapping dataframes."""
+
+
+def combine_two_overlapping_dataframes(
+    df1: pd.DataFrame, df2: pd.DataFrame, index_columns: List[str]
+) -> pd.DataFrame:
+    """Combine two dataframes that may have identical columns, prioritizing the first one.
+
+    Both dataframes must have a dummy index (if not, use reset_index() on both of them).
+    The columns to be considered as index should be declared in index_columns.
+
+    Suppose you have two dataframes, df1 and df2, both having columns "col_a" and "col_b", and we want to create a
+    combined dataframe with the union of rows and columns, and, on the overlapping elements, prioritize df1 values.
+    To do this, you could:
+    * Merge the dataframes. But then the result would have columns "col_a_x", "col_a_y", "col_b_x", and "col_b_y".
+    * Concatenate them and then drop duplicates (for example keeping the last repetition). This works, but, if df1 has
+    nans then we would keep those nans.
+    To solve these problems, this function will not create new columns, and will prioritize df1 **only if it has data**,
+    and otherwise use values from df2.
+
+    Parameters
+    ----------
+    df1 : pd.DataFrame
+        First dataframe (the one that has priority).
+    df2 : pd.DataFrame
+        Second dataframe.
+    index_columns : list
+        Columns (that must be present in both dataframes) that should be treated as index (e.g. ["country", "year"]).
+
+    Returns
+    -------
+    combined : pd.DataFrame
+        Combination of the two dataframes.
+
+    """
+    # Find common columns of the two dataframes (ignoring index columns).
+    df1_columns = df1.columns.tolist()
+    df2_columns = df2.columns.tolist()
+    # This is equivalent to doing a union of the sets of column names, but keeping order of columns.
+    # The output dataframe will have first all columns in df1, and then any possible new columns in df2.
+    common_columns = [
+        column for column in df1_columns if column not in index_columns
+    ] + [column for column in df2_columns if column not in df1_columns]
+
+    # Go column by column, concatenate, remove nans, and then keep df1 version on duplicated rows.
+    # Note: There may be a faster, simpler way to achieve this.
+    combined = pd.DataFrame({column: [] for column in index_columns})
+    for variable in common_columns:
+        _df1 = pd.DataFrame()
+        _df2 = pd.DataFrame()
+        if variable in df1.columns:
+            _df1 = df1[index_columns + [variable]].dropna(subset=variable)
+        if variable in df2.columns:
+            _df2 = df2[index_columns + [variable]].dropna(subset=variable)
+        _combined = pd.concat([_df1, _df2], ignore_index=True)
+        # On rows where both datasets overlap, give priority to df1.
+        _combined = _combined.drop_duplicates(subset=index_columns, keep="first")
+        # Add the current variable to the combined dataframe.
+        combined = pd.merge(combined, _combined, on=index_columns, how="outer")
+
+    return combined

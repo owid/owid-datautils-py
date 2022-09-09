@@ -929,3 +929,75 @@ class TestApplyOnCategoricals:
         )
 
         assert list(new_desc) == ["a", "b per capita", " per capita"]
+
+
+class TestCombineTwoOverlappingDataFrames:
+    def test_combine_dataframes(self):
+        a = pd.DataFrame(
+            {"year": [2000, 2001, 2002], "var_a": [0, 1, 2], "var_b": ["0", "1", "2"]}
+        )
+        b = pd.DataFrame(
+            {
+                "year": [2001, 2002, 2003],
+                "var_a": [10, 20, 30],
+                "var_c": ["10", "20", "30"],
+            }
+        )
+        out = dataframes.combine_two_overlapping_dataframes(
+            df1=a, df2=b, index_columns=["year"]
+        )
+        expected = pd.DataFrame(
+            {
+                "year": [2000, 2001, 2002, 2003],
+                "var_a": [0, 1, 2, 30],
+                "var_b": ["0", "1", "2", np.nan],
+                "var_c": [np.nan, "10", "20", "30"],
+            }
+        )
+
+        assert dataframes.are_equal(df1=expected, df2=out)[0]
+
+    def test_combine_dataframes_inverted_order(self):
+        # Now we prioritize b.
+        a = pd.DataFrame(
+            {"year": [2000, 2001, 2002], "var_a": [0, 1, 2], "var_b": ["0", "1", "2"]}
+        )
+        b = pd.DataFrame(
+            {
+                "year": [2001, 2002, 2003],
+                "var_a": [10, 20, 30],
+                "var_c": ["10", "20", "30"],
+            }
+        )
+        out = dataframes.combine_two_overlapping_dataframes(
+            df1=b, df2=a, index_columns=["year"]
+        )
+        expected = pd.DataFrame(
+            {
+                "year": [2001, 2002, 2003, 2000],
+                "var_a": [10, 20, 30, 0],
+                "var_c": ["10", "20", "30", np.nan],
+                "var_b": ["1", "2", np.nan, "0"],
+            }
+        )
+
+        assert dataframes.are_equal(df1=expected, df2=out)[0]
+
+    def test_combine_dataframes_no_overlapping_columns(self):
+        a = pd.DataFrame(
+            {"year": [2000, 2001, 2002], "var_a": [0, 1, 2], "var_b": ["0", "1", "2"]}
+        )
+        b = pd.DataFrame({"year": [2001, 2002, 2003], "var_c": [10, 20, 30]})
+        out = dataframes.combine_two_overlapping_dataframes(
+            df1=a, df2=b, index_columns=["year"]
+        )
+        expected = pd.DataFrame(
+            {
+                "year": [2000, 2001, 2002, 2003],
+                "var_a": [0, 1, 2, np.nan],
+                "var_b": ["0", "1", "2", np.nan],
+                "var_c": [np.nan, 10, 20, 30],
+            }
+        )
+
+        assert dataframes.are_equal(df1=expected, df2=out)[0]

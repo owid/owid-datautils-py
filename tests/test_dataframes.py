@@ -974,10 +974,68 @@ class TestCombineTwoOverlappingDataFrames:
         )
         expected = pd.DataFrame(
             {
-                "year": [2001, 2002, 2003, 2000],
-                "var_a": [10, 20, 30, 0],
-                "var_c": ["10", "20", "30", np.nan],
-                "var_b": ["1", "2", np.nan, "0"],
+                "year": [2000, 2001, 2002, 2003],
+                "var_a": [0, 10, 20, 30],
+                "var_b": ["0", "1", "2", np.nan],
+                "var_c": [np.nan, "10", "20", "30"],
+            }
+        )
+
+        assert dataframes.are_equal(df1=expected, df2=out)[0]
+
+    def test_combine_dataframes_inverted_order_keeping_column_order(self):
+        # Now we prioritize b.
+        a = pd.DataFrame(
+            {"year": [2000, 2001, 2002], "var_a": [0, 1, 2], "var_b": ["0", "1", "2"]}
+        )
+        b = pd.DataFrame(
+            {
+                "year": [2001, 2002, 2003],
+                "var_a": [10, 20, 30],
+                "var_c": ["10", "20", "30"],
+            }
+        )
+        out = dataframes.combine_two_overlapping_dataframes(
+            df1=b,
+            df2=a,
+            index_columns=["year"],
+            keep_column_order=True,
+        )
+        expected = pd.DataFrame(
+            {
+                "year": [2000, 2001, 2002, 2003],
+                "var_a": [0, 10, 20, 30],
+                "var_c": [np.nan, "10", "20", "30"],
+                "var_b": ["0", "1", "2", np.nan],
+            }
+        )
+
+        assert dataframes.are_equal(df1=expected, df2=out)[0]
+
+    def test_combine_dataframes_filling_nans_in_df1_with_df2(self):
+        a = pd.DataFrame(
+            {
+                "year": [2000, 2001, 2002],
+                "var_a": [0, np.nan, 2],
+                "var_b": ["0", "1", "2"],
+            }
+        )
+        b = pd.DataFrame(
+            {
+                "year": [2001, 2002, 2003],
+                "var_a": [10, 20, 30],
+                "var_c": ["10", "20", "30"],
+            }
+        )
+        out = dataframes.combine_two_overlapping_dataframes(
+            df1=a, df2=b, index_columns=["year"]
+        )
+        expected = pd.DataFrame(
+            {
+                "year": [2000, 2001, 2002, 2003],
+                "var_a": [0, 10, 2, 30],
+                "var_b": ["0", "1", "2", np.nan],
+                "var_c": [np.nan, "10", "20", "30"],
             }
         )
 
@@ -1001,3 +1059,98 @@ class TestCombineTwoOverlappingDataFrames:
         )
 
         assert dataframes.are_equal(df1=expected, df2=out)[0]
+
+    def test_combine_single_index_dataframes(self):
+        a = pd.DataFrame(
+            {"year": [2000, 2001, 2002], "var_a": [0, 1, 2], "var_b": ["0", "1", "2"]}
+        ).set_index("year")
+        b = pd.DataFrame(
+            {
+                "year": [2001, 2002, 2003],
+                "var_a": [10, 20, 30],
+                "var_c": ["10", "20", "30"],
+            }
+        ).set_index("year")
+        out = dataframes.combine_two_overlapping_dataframes(
+            df1=a, df2=b, index_columns=None
+        )
+        expected = pd.DataFrame(
+            {
+                "year": [2000, 2001, 2002, 2003],
+                "var_a": [0, 1, 2, 30],
+                "var_b": ["0", "1", "2", np.nan],
+                "var_c": [np.nan, "10", "20", "30"],
+            }
+        ).set_index("year")
+
+        assert dataframes.are_equal(df1=expected, df2=out)[0]
+
+    def test_combine_multi_index_dataframes(self):
+        a = pd.DataFrame(
+            {
+                "year": [2000, 2000, 2001, 2002],
+                "country": ["country_b", "country_a", "country_a", "country_b"],
+                "var_a": [0, 1, 2, 3],
+                "var_b": ["0", "1", "2", "3"],
+            }
+        ).set_index(["year", "country"])
+        b = pd.DataFrame(
+            {
+                "year": [2001, 2002, 2003],
+                "country": ["country_a", "country_a", "country_b"],
+                "var_a": [10, 20, 30],
+                "var_c": ["10", "20", "30"],
+            }
+        ).set_index(["year", "country"])
+        out = dataframes.combine_two_overlapping_dataframes(
+            df1=a, df2=b, index_columns=None
+        )
+        # Note that currently combine_two_overlapping_dataframes sorts indexes (which at the moment can't be avoided).
+        expected = pd.DataFrame(
+            {
+                "year": [2000, 2000, 2001, 2002, 2002, 2003],
+                "country": [
+                    "country_a",
+                    "country_b",
+                    "country_a",
+                    "country_a",
+                    "country_b",
+                    "country_b",
+                ],
+                "var_a": [1, 0, 2, 20, 3, 30],
+                "var_b": ["1", "0", "2", np.nan, "3", np.nan],
+                "var_c": [np.nan, np.nan, "10", "20", np.nan, "30"],
+            }
+        ).set_index(["year", "country"])
+
+        assert dataframes.are_equal(df1=expected, df2=out)[0]
+
+    def test_warn_on_different_indexes(self):
+        # In this case, combine_two_overlapping_dataframes will treat "a" as the same index as "aa", which is probably
+        # never the desired behaviour. Therefore a warning must be raised.
+        a = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}).set_index("a")
+        b = pd.DataFrame({"aa": [1, 2, 3], "bb": [4, 5, 6]}).set_index("aa")
+
+        with warns(UserWarning, match="same indexes"):
+            dataframes.combine_two_overlapping_dataframes(a, b, index_columns=None)
+
+    def test_warn_if_index_columns_is_given_but_df1_has_index(self):
+        a = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}).set_index("a")
+        b = pd.DataFrame({"a": [10, 20, 30], "b": [40, 50, 60]})
+
+        with warns(UserWarning, match="dummy index"):
+            dataframes.combine_two_overlapping_dataframes(a, b, index_columns=["b"])
+
+    def test_warn_if_index_columns_is_given_but_df2_has_index(self):
+        a = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+        b = pd.DataFrame({"a": [10, 20, 30], "b": [40, 50, 60]}).set_index("a")
+
+        with warns(UserWarning, match="dummy index"):
+            dataframes.combine_two_overlapping_dataframes(a, b, index_columns=["b"])
+
+    def test_warn_if_index_columns_is_given_but_both_dataframes_have_index(self):
+        a = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}).set_index("a")
+        b = pd.DataFrame({"a": [10, 20, 30], "b": [40, 50, 60]}).set_index("a")
+
+        with warns(UserWarning, match="dummy index"):
+            dataframes.combine_two_overlapping_dataframes(a, b, index_columns=["b"])

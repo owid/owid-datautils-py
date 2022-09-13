@@ -1,5 +1,6 @@
 """Objects related to pandas dataframes."""
 
+import warnings
 from typing import Tuple, Union, List, Any, Dict, Optional, cast, Callable
 
 import numpy as np
@@ -499,17 +500,16 @@ def apply_on_categoricals(
     return cast(pd.Series, pd.Categorical.from_codes(codes, categories=categories))
 
 
-class CombinedDataFramesHaveRepeatedColumns(ExceptionFromDocstring):
-    """There are repeated columns, which should not happen when combining two overlapping dataframes."""
-
-
 def combine_two_overlapping_dataframes(
-    df1: pd.DataFrame, df2: pd.DataFrame, index_columns: List[str]
+    df1: pd.DataFrame,
+    df2: pd.DataFrame,
+    index_columns: Optional[List[str]] = None,
+    keep_column_order: bool = False,
 ) -> pd.DataFrame:
     """Combine two dataframes that may have identical columns, prioritizing the first one.
 
-    Both dataframes must have a dummy index (if not, use reset_index() on both of them).
-    The columns to be considered as index should be declared in index_columns.
+    If dataframes have a dummy index, index_columns have to be specified (and must be a column in both dataframes).
+    If dataframes have a single/multi index, index_columns must be left as None.
 
     Suppose you have two dataframes, df1 and df2, both having columns "col_a" and "col_b", and we want to create a
     combined dataframe with the union of rows and columns, and, on the overlapping elements, prioritize df1 values.
@@ -517,8 +517,8 @@ def combine_two_overlapping_dataframes(
     * Merge the dataframes. But then the result would have columns "col_a_x", "col_a_y", "col_b_x", and "col_b_y".
     * Concatenate them and then drop duplicates (for example keeping the last repetition). This works, but, if df1 has
     nans then we would keep those nans.
-    To solve these problems, this function will not create new columns, and will prioritize df1 **only if it has data**,
-    and otherwise use values from df2.
+    To solve these problems, this function will not create new columns, and will prioritize df1, but filling missing
+    values in df1 with data from df2.
 
     Parameters
     ----------
@@ -526,8 +526,12 @@ def combine_two_overlapping_dataframes(
         First dataframe (the one that has priority).
     df2 : pd.DataFrame
         Second dataframe.
-    index_columns : list
-        Columns (that must be present in both dataframes) that should be treated as index (e.g. ["country", "year"]).
+    index_columns : list or None
+        Columns (that must be present in both dataframes, and not as index columns) that should be treated as index
+        (e.g. ["country", "year"]). If None, the single/multi index of the dataframes will be used.
+    keep_column_order : bool
+        True to keep the column order of the original dataframes (first all columns in df1, then all columns from df2
+        that were not already in df1). False to sort columns alphanumerically.
 
     Returns
     -------
@@ -535,29 +539,43 @@ def combine_two_overlapping_dataframes(
         Combination of the two dataframes.
 
     """
-    # Find common columns of the two dataframes (ignoring index columns).
-    df1_columns = df1.columns.tolist()
-    df2_columns = df2.columns.tolist()
-    # This is equivalent to doing a union of the sets of column names, but keeping order of columns.
-    # The output dataframe will have first all columns in df1, and then any possible new columns in df2.
-    common_columns = [
-        column for column in df1_columns if column not in index_columns
-    ] + [column for column in df2_columns if column not in df1_columns]
+    df1 = df1.copy()
+    df2 = df2.copy()
+    if index_columns is not None:
+        # Ensure dataframes have a dummy index.
+        if not ((df1.index.names == [None]) and (df2.index.names == [None])):
+            warnings.warn(
+                "If index_columns is given, dataframes should have a dummy index. Use reset_index()."
+            )
+        # Set index columns.
+        df1 = df1.set_index(index_columns)
+        df2 = df2.set_index(index_columns)
+    else:
+        # Ensure dataframes have the same indexes.
+        if not (df1.index.names == df2.index.names):
+            warnings.warn("Dataframes should have the same indexes.")
 
-    # Go column by column, concatenate, remove nans, and then keep df1 version on duplicated rows.
-    # Note: There may be a faster, simpler way to achieve this.
-    combined = pd.DataFrame({column: [] for column in index_columns})
-    for variable in common_columns:
-        _df1 = pd.DataFrame()
-        _df2 = pd.DataFrame()
-        if variable in df1.columns:
-            _df1 = df1[index_columns + [variable]].dropna(subset=variable)
-        if variable in df2.columns:
-            _df2 = df2[index_columns + [variable]].dropna(subset=variable)
-        _combined = pd.concat([_df1, _df2], ignore_index=True)
-        # On rows where both datasets overlap, give priority to df1.
-        _combined = _combined.drop_duplicates(subset=index_columns, keep="first")
-        # Add the current variable to the combined dataframe.
-        combined = pd.merge(combined, _combined, on=index_columns, how="outer")
+    # Align both dataframes on their common indexes.
+    # Give priority to df1 on overlapping values.
+    combined, df2 = df1.align(df2)
 
-    return combined
+    # Fill missing values in df1 with values from df2.
+    combined = combined.fillna(df2)
+
+    if index_columns is not None:
+        combined = combined.reset_index()
+
+    if keep_column_order:
+        # The previous operations will automatically sort columns alphanumerically.
+        # To keep the original order of columns, we need to find that sequence of columns.
+        # First, columns of df1, and then all columns in df2 that were not in df1.
+        if index_columns is not None:
+            columns = index_columns + df1.columns.tolist()
+        else:
+            columns = df1.columns.tolist()
+        columns = columns + [column for column in df2.columns if column not in columns]
+        combined = combined[columns]
+
+    # It would be good to have a 'keep_row_order' option, but it's a bit tricky.
+
+    return cast(pd.DataFrame, combined)

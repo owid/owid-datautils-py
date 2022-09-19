@@ -4,15 +4,13 @@
 
 import json
 import unittest
-from unittest.mock import patch, mock_open
+from unittest.mock import mock_open, patch
 
 import numpy as np
 import pandas as pd
 from pytest import warns
 
-from owid.datautils import dataframes
-from owid.datautils import geo
-
+from owid.datautils import dataframes, geo
 
 mock_countries = {
     "country_02": "Country 2",
@@ -180,6 +178,9 @@ class TestHarmonizeCountries:
             warn_on_unused_countries=False,
             warn_on_missing_countries=False,
         ).equals(df_out)
+
+        # input dataframe is unchanged
+        assert df_in.country.tolist() == ["Country 1", "country_02"]
 
     def test_one_country_unchanged_and_another_unknown(self, _):
         df_in = pd.DataFrame(

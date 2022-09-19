@@ -415,7 +415,7 @@ def harmonize_countries(
 
     # Replace country names following the mapping given in the countries file.
     # Countries in dataframe that are not in mapping will be either left unchanged of converted to nan.
-    df_harmonized = df.copy()
+    df_harmonized = df.copy(deep=False)
     df_harmonized[country_col] = map_series(
         series=df[country_col],
         mapping=countries,

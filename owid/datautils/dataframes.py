@@ -1,7 +1,7 @@
 """Objects related to pandas dataframes."""
 
 import warnings
-from typing import Tuple, Union, List, Any, Dict, Optional, cast, Callable
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 
 import numpy as np
 import pandas as pd
@@ -405,6 +405,19 @@ def map_series(
         Mapped series.
 
     """
+    # If given category, only map category names and return category type.
+    if series.dtype == "category":
+        new_categories = map_series(
+            pd.Series(series.cat.categories),
+            mapping=mapping,
+            make_unmapped_values_nan=make_unmapped_values_nan,
+            warn_on_missing_mappings=warn_on_missing_mappings,
+            warn_on_unused_mappings=warn_on_unused_mappings,
+            show_full_warning=show_full_warning,
+        )
+        category_mapping = dict(zip(series.cat.categories, new_categories))
+        return cast(pd.Series, series.cat.rename_categories(category_mapping))
+
     # Translate values in series following the mapping.
     series_mapped = series.map(mapping)
     if not make_unmapped_values_nan:

@@ -2,10 +2,11 @@
 
 """
 
+from typing import Any, Dict
+
 import numpy as np
 import pandas as pd
 from pytest import warns
-from typing import Any, Dict
 
 from owid.datautils import dataframes
 
@@ -897,6 +898,19 @@ class TestMapSeries:
         assert dataframes.map_series(
             series=series_in, mapping=mapping, make_unmapped_values_nan=False
         ).equals(series_out)
+
+    def test_map_categorical(self):
+        series_in = pd.Series(
+            ["country_01", "country_02", "country_03", np.nan]
+        ).astype("category")
+        series_out = pd.Series(["Country 1", "Country 2", "country_03", np.nan]).astype(
+            "category"
+        )
+        out = dataframes.map_series(
+            series=series_in, mapping=self.mapping, make_unmapped_values_nan=False
+        )
+        assert out.equals(series_out)
+        assert out.dtype == "category"
 
 
 class TestConcatenate:

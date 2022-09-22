@@ -912,6 +912,23 @@ class TestMapSeries:
         assert out.equals(series_out)
         assert out.dtype == "category"
 
+    def test_map_categorical_non_unique(self):
+        series_in = pd.Series(
+            ["country_01", "country_02", "country_03", np.nan]
+        ).astype("category")
+        series_out = pd.Series(["Country 1", "Country 1", "country_03", np.nan]).astype(
+            "category"
+        )
+        mapping = {
+            "country_01": "Country 1",
+            "country_02": "Country 1",
+        }
+        out = dataframes.map_series(
+            series=series_in, mapping=mapping, make_unmapped_values_nan=False
+        )
+        assert out.equals(series_out)
+        assert out.dtype == "category"
+
 
 class TestConcatenate:
     def test_concat_categoricals(self):

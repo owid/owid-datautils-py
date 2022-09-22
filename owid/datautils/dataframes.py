@@ -416,7 +416,7 @@ def map_series(
             show_full_warning=show_full_warning,
         )
         category_mapping = dict(zip(series.cat.categories, new_categories))
-        return cast(pd.Series, series.cat.rename_categories(category_mapping))
+        return series.replace(category_mapping)
 
     # Translate values in series following the mapping.
     series_mapped = series.map(mapping)

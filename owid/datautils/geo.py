@@ -30,12 +30,8 @@ NUM_ALLOWED_NANS_PER_YEAR = None
 
 @functools.lru_cache
 def _load_population() -> pd.DataFrame:
-    population = (
-        catalog.find("population", namespace="owid", dataset="key_indicators")
-        .load()
-        .reset_index()
-    )
-
+    rc = catalog.RemoteCatalog()
+    population = rc["garden/owid/latest/key_indicators/population"].reset_index()
     return cast(pd.DataFrame, population)
 
 

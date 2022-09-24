@@ -41,15 +41,11 @@ mock_income_groups = pd.DataFrame(
 )
 
 
-class MockPopulationLoad:
-    def __init__(self, *args, **kwargs):
-        self.population = mock_population
-
-    def load(self):
-        return self.population
+def mock_population_load(*args, **kwargs):
+    return mock_population
 
 
-@patch.object(geo.catalog, "find", MockPopulationLoad)
+@patch.object(geo.catalog.catalogs.CatalogMixin, "__getitem__", mock_population_load)
 class TestAddPopulationToDataframe:
     def test_all_countries_and_years_in_population(self):
         df_in = pd.DataFrame(

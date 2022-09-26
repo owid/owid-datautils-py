@@ -407,6 +407,9 @@ def map_series(
     """
     # If given category, only map category names and return category type.
     if series.dtype == "category":
+        # Remove unused categories in input series.
+        series = series.cat.remove_unused_categories()
+
         new_categories = map_series(
             pd.Series(series.cat.categories),
             mapping=mapping,

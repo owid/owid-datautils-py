@@ -26,7 +26,7 @@ def get_base_url(url: str, include_scheme=True) -> str:
     """
     # Function urlparse cannot parse a url if it does not start with http(s)://.
     # If such a url is passed, assume "http://".
-    if not re.match("https?\:\/\/", url):
+    if not re.match(r"https?://", url):
         warnings.warn(f"Schema not defined for url {url}; assuming http.")
         url = f"http://{url}"
 

@@ -5,7 +5,7 @@ import warnings
 from urllib.parse import urlparse
 
 
-def get_base_url(url: str, include_scheme=True) -> str:
+def get_base_url(url: str, include_scheme: bool = True) -> str:
     """Get base URL from an arbitrary URL path (e.g. "https://example.com/some/path" -> "https://example.com").
 
     If the given URL does not start with "http(s)://"

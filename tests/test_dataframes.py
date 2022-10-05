@@ -930,6 +930,25 @@ class TestMapSeries:
         assert out.dtype == "category"
 
 
+class TestRenameCategories:
+    def test_rename_categories(self):
+        series_in = pd.Series(
+            ["country_01", "country_02", "country_03", np.nan]
+        ).astype("category")
+        series_out = pd.Series(["Country 1", "Country 1", "country_03", np.nan]).astype(
+            "category"
+        )
+        mapping = {
+            "country_01": "Country 1",
+            "country_02": "Country 1",
+        }
+        out = dataframes.rename_categories(
+            series=series_in, mapping=mapping
+        )
+        assert out.equals(series_out)
+        assert out.dtype == "category"
+
+
 class TestConcatenate:
     def test_concat_categoricals(self):
         a = pd.DataFrame({"x": ["a"], "d": [1]}).astype("category")

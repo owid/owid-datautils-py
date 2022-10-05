@@ -419,7 +419,7 @@ def map_series(
             show_full_warning=show_full_warning,
         )
         category_mapping = dict(zip(series.cat.categories, new_categories))
-        return series.replace(category_mapping)
+        return rename_categories(series, category_mapping)
 
     # Translate values in series following the mapping.
     series_mapped = series.map(mapping)
@@ -460,6 +460,28 @@ def map_series(
             )
 
     return series_mapped
+
+
+def rename_categories(series: pd.Series, mapping: Dict[Any, Any]) -> pd.Series:
+    """Alternative to pd.Series.cat.rename_categories which supports non-unique categories
+    in category map (two categories can map to a single category). We do that by replacing
+    non-unique categories first and then mapping with unique categories.
+
+    It should be as fast as pd.Series.cat.rename_categories if there are no non-unique categories.
+    """
+    assert series.dtype == "category"
+    new_mapping = {}
+    for map_from, map_to in mapping.items():
+        # Non-unique category, replace it first
+        if map_to in new_mapping.values():
+            # Find the category that maps to map_to
+            series[series == map_from] = [
+                k for k, v in new_mapping.items() if v == map_to
+            ][0]
+        else:
+            new_mapping[map_from] = map_to
+
+    return series.cat.rename_categories(new_mapping).cat.remove_unused_categories()
 
 
 def concatenate(dfs: List[pd.DataFrame], **kwargs: Any) -> pd.DataFrame:

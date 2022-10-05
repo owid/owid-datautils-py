@@ -466,8 +466,8 @@ def rename_categories(series: pd.Series, mapping: Dict[Any, Any]) -> pd.Series:
     """Alternative to pd.Series.cat.rename_categories which supports non-unique categories.
 
     We do that by replacing non-unique categories first and then mapping with unique categories.
-
-    It should be as fast as pd.Series.cat.rename_categories if there are no non-unique categories.
+    Unused categories are removed during the process. It should be as fast as
+    pd.Series.cat.rename_categories if there are no non-unique categories.
     """
     if series.dtype != "category":
         raise ValueError("Series must be of type category.")
@@ -489,9 +489,12 @@ def rename_categories(series: pd.Series, mapping: Dict[Any, Any]) -> pd.Series:
         else:
             new_mapping[map_from] = map_to
 
+    # NOTE: removing unused categories is necessary because of renaming
     return cast(
         pd.Series,
-        series.cat.rename_categories(new_mapping).cat.remove_unused_categories(),
+        series.cat.remove_unused_categories()
+        .cat.rename_categories(new_mapping)
+        .cat.remove_unused_categories(),
     )
 
 

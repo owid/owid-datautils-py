@@ -463,13 +463,14 @@ def map_series(
 
 
 def rename_categories(series: pd.Series, mapping: Dict[Any, Any]) -> pd.Series:
-    """Alternative to pd.Series.cat.rename_categories which supports non-unique categories
-    in category map (two categories can map to a single category). We do that by replacing
-    non-unique categories first and then mapping with unique categories.
+    """Alternative to pd.Series.cat.rename_categories which supports non-unique categories.
+
+    We do that by replacing non-unique categories first and then mapping with unique categories.
 
     It should be as fast as pd.Series.cat.rename_categories if there are no non-unique categories.
     """
-    assert series.dtype == "category"
+    if series.dtype != "category":
+        raise ValueError("Series must be of type category.")
 
     series = series.copy()
 

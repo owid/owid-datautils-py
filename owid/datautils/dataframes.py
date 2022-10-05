@@ -470,10 +470,17 @@ def rename_categories(series: pd.Series, mapping: Dict[Any, Any]) -> pd.Series:
     It should be as fast as pd.Series.cat.rename_categories if there are no non-unique categories.
     """
     assert series.dtype == "category"
+
+    series = series.copy()
+
     new_mapping = {}
     for map_from, map_to in mapping.items():
+        # Map nulls right away
+        if pd.isnull(map_to):
+            series[series == map_from] = np.nan
+
         # Non-unique category, replace it first
-        if map_to in new_mapping.values():
+        elif map_to in new_mapping.values():
             # Find the category that maps to map_to
             series[series == map_from] = [
                 k for k, v in new_mapping.items() if v == map_to

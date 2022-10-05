@@ -474,7 +474,7 @@ def rename_categories(series: pd.Series, mapping: Dict[Any, Any]) -> pd.Series:
 
     series = series.copy()
 
-    new_mapping = {}
+    new_mapping: Dict[Any, Any] = {}
     for map_from, map_to in mapping.items():
         # Map nulls right away
         if pd.isnull(map_to):
@@ -489,7 +489,10 @@ def rename_categories(series: pd.Series, mapping: Dict[Any, Any]) -> pd.Series:
         else:
             new_mapping[map_from] = map_to
 
-    return series.cat.rename_categories(new_mapping).cat.remove_unused_categories()
+    return cast(
+        pd.Series,
+        series.cat.rename_categories(new_mapping).cat.remove_unused_categories(),
+    )
 
 
 def concatenate(dfs: List[pd.DataFrame], **kwargs: Any) -> pd.DataFrame:

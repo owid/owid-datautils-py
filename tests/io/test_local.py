@@ -5,6 +5,7 @@
 import tempfile
 import zipfile
 from pathlib import Path
+from typing import Union
 
 from pytest import warns, raises
 from unittest.mock import patch, mock_open
@@ -61,7 +62,9 @@ def test_save_json(tmpdir):
     save_json(data, tmpdir / "test.json")
 
 
-def _create_compressed_file_with_content(file_name, containing_dir, content):
+def _create_compressed_file_with_content(
+    file_name: str, containing_dir: Union[str, Path], content: str
+) -> None:
     # Create a file with some example content.
     file_inside = Path(containing_dir) / file_name
     with open(file_inside, "w") as _file_inside:
@@ -72,8 +75,8 @@ def _create_compressed_file_with_content(file_name, containing_dir, content):
 
 
 def _create_compressed_file_with_content_within_folder(
-    file_name, containing_dir, sub_dir_name, content
-):
+    file_name: str, containing_dir: Union[str, Path], sub_dir_name: str, content: str
+) -> None:
     # Create a folder that will later be compressed.
     to_compress_dir = Path(containing_dir) / sub_dir_name
     to_compress_dir.mkdir()

@@ -87,8 +87,8 @@ def decompress_file(
     input_file: Union[str, Path],
     output_folder: Union[str, Path],
     overwrite: bool = False,
-    **kwargs
-):
+    **kwargs: Any
+) -> None:
     """Extract a local zip file, or a remote zip file given its URL.
 
     Parameters
@@ -101,11 +101,10 @@ def decompress_file(
         Overwrite decompressed content if it already exists (otherwise raise an error).
 
     """
-
     if str(input_file).startswith("http"):
         # If input path is a URL, first download the zipped file into a temporary folder.
         with tempfile.NamedTemporaryFile() as temp_file:
-            download_file_from_url(input_file, temp_file.name, **kwargs)
+            download_file_from_url(str(input_file), temp_file.name, **kwargs)
             # Open the zipped file.
             zip_file = zipfile.ZipFile(temp_file.name)
     else:

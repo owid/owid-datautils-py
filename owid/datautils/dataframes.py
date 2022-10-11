@@ -419,7 +419,7 @@ def map_series(
             show_full_warning=show_full_warning,
         )
         category_mapping = dict(zip(series.cat.categories, new_categories))
-        return series.replace(category_mapping)
+        return rename_categories(series, category_mapping)
 
     # Translate values in series following the mapping.
     series_mapped = series.map(mapping)
@@ -460,6 +460,42 @@ def map_series(
             )
 
     return series_mapped
+
+
+def rename_categories(series: pd.Series, mapping: Dict[Any, Any]) -> pd.Series:
+    """Alternative to pd.Series.cat.rename_categories which supports non-unique categories.
+
+    We do that by replacing non-unique categories first and then mapping with unique categories.
+    Unused categories are removed during the process. It should be as fast as
+    pd.Series.cat.rename_categories if there are no non-unique categories.
+    """
+    if series.dtype != "category":
+        raise ValueError("Series must be of type category.")
+
+    series = series.copy()
+
+    new_mapping: Dict[Any, Any] = {}
+    for map_from, map_to in mapping.items():
+        # Map nulls right away
+        if pd.isnull(map_to):
+            series[series == map_from] = np.nan
+
+        # Non-unique category, replace it first
+        elif map_to in new_mapping.values():
+            # Find the category that maps to map_to
+            series[series == map_from] = [
+                k for k, v in new_mapping.items() if v == map_to
+            ][0]
+        else:
+            new_mapping[map_from] = map_to
+
+    # NOTE: removing unused categories is necessary because of renaming
+    return cast(
+        pd.Series,
+        series.cat.remove_unused_categories()
+        .cat.rename_categories(new_mapping)
+        .cat.remove_unused_categories(),
+    )
 
 
 def concatenate(dfs: List[pd.DataFrame], **kwargs: Any) -> pd.DataFrame:

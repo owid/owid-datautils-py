@@ -37,3 +37,7 @@ watch: .venv
 bump: .venv
 	@echo '==> Bumping version'
 	poetry run bump2version --no-tag  --no-commit $(filter-out $@, $(MAKECMDGOALS))
+
+lab: .venv
+	@echo '==> Starting Jupyter server'
+	poetry run jupyter lab

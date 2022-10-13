@@ -1264,10 +1264,6 @@ class TestHasIndex:
         df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}).set_index(["a", "b"])
         assert dataframes.has_index(df=df) is True
 
-    def test_dataframe_with_multiple_columns_and_multiple_indexes(self):
-        df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}).set_index(["a", "b"])
-        assert dataframes.has_index(df=df) is True
-
     def test_dataframe_with_multiple_columns_and_dummy_index(self):
         df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
         assert dataframes.has_index(df=df) is False

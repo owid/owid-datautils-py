@@ -662,16 +662,16 @@ def to_file(
 ) -> None:
     """Save dataframe to file.
 
-    This function wraps all pandas df.to_* methods, e.g. df.to_csv() or df.to_parquet(), and has the following advantages:
+    This function wraps all pandas df.to_* methods, e.g. df.to_csv() or df.to_parquet(), with the following advantages:
     * The output file will have the format determined by the extension of file_path. Hence, to_file(df, "data.csv") will
-      create a csv file, and to_file(df, "data.parquet") will create a parquet file.
+    create a csv file, and to_file(df, "data.parquet") will create a parquet file.
     * If file_path is with one or more subfolders that do not exist, the full path will be created.
     * It can overwrite an existing file (if overwrite is True), or raise an error if the file already exists.
     * It will avoid creating an index column if the dataframe has a dummy index (which would be equivalent to doing
-      df.to_csv(file_path, index=False)), but it will include the index if the dataframe has one.
+    df.to_csv(file_path, index=False)), but it will include the index if the dataframe has one.
     * Any additional keyword argument that would be passed on to the method to write a file can be safely added. For
-      example, to_file(df, "data.csv", na_rep="TEST") will replace missing data by "TEST" (analogous to
-      df.to_csv("data.csv", na_rep="TEST")).
+    example, to_file(df, "data.csv", na_rep="TEST") will replace missing data by "TEST" (analogous to
+    df.to_csv("data.csv", na_rep="TEST")).
 
     Parameters
     ----------

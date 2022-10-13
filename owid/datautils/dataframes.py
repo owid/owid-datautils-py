@@ -657,7 +657,9 @@ def has_index(df: pd.DataFrame) -> bool:
     return df_has_index
 
 
-def to_file(df: pd.DataFrame, file_path: Union[str, Path], overwrite: bool = True, **kwargs: Any) -> None:
+def to_file(
+    df: pd.DataFrame, file_path: Union[str, Path], overwrite: bool = True, **kwargs: Any
+) -> None:
     """Save dataframe to file.
 
     This function wraps all pandas df.to_* methods, e.g. df.to_csv() or df.to_parquet(), and has the following advantages:
@@ -693,7 +695,9 @@ def to_file(df: pd.DataFrame, file_path: Union[str, Path], overwrite: bool = Tru
 
     # Avoid overwriting an existing file unless explicitly stated.
     if file_path.is_file() and not overwrite:
-        raise FileExistsError("Failed to save dataframe because file exists and 'overwrite' is False.")
+        raise FileExistsError(
+            "Failed to save dataframe because file exists and 'overwrite' is False."
+        )
 
     # Available output methods (some of them may need additional dependencies to work).
     output_methods = {
@@ -713,14 +717,18 @@ def to_file(df: pd.DataFrame, file_path: Union[str, Path], overwrite: bool = Tru
         "xml": df.to_xml,
     }
     if extension not in output_methods:
-        raise ValueError(f"Failed saving dataframe because of an unknown file extension: {extension}")
+        raise ValueError(
+            f"Failed saving dataframe because of an unknown file extension: {extension}"
+        )
     # Select the appropriate storing method.
     save_function = output_methods[extension]
 
     # Decide whether dataframe should be stored with or without an index, if:
     # * The storing method allows for an 'index' argument.
     # * The argument "index" is not explicitly given.
-    if ("index" in inspect.signature(save_function).parameters) and ("index" not in kwargs):
+    if ("index" in inspect.signature(save_function).parameters) and (
+        "index" not in kwargs
+    ):
         # Make 'index' False to avoid storing index if dataframe has a dummy index.
         kwargs["index"] = has_index(df=df)
 

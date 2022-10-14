@@ -7,10 +7,10 @@ import tempfile
 from typing import Callable, Any, Optional
 
 
-def enable_url_download(path_arg_name: Optional[str] = None) -> Callable[[Any], Any]:
+def enable_file_download(path_arg_name: Optional[str] = None) -> Callable[[Any], Any]:
     """Enable downloading of files from URLs."""
 
-    def _enable_url_download(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
+    def _enable_file_download(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
         @functools.wraps(func)
         def wrapper_download(*args: Any, **kwargs: Any) -> Any:
             # Get path to file
@@ -45,4 +45,4 @@ def enable_url_download(path_arg_name: Optional[str] = None) -> Callable[[Any], 
 
         return wrapper_download
 
-    return _enable_url_download
+    return _enable_file_download

@@ -5,10 +5,10 @@ from pathlib import Path
 import tarfile
 from typing import Union
 
-from owid.datautils.decorators import enable_url_download
+from owid.datautils.decorators import enable_file_download
 
 
-@enable_url_download(path_arg_name="input_file")
+@enable_file_download(path_arg_name="input_file")
 def decompress_file(
     input_file: Union[str, Path],
     output_folder: Union[str, Path],

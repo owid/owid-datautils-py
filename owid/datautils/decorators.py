@@ -10,7 +10,7 @@ from typing import Callable, Any, Optional
 def enable_url_download(path_arg_name: Optional[str] = None) -> Callable[[Any], Any]:
     """Enable downloading of files from URLs."""
 
-    def enable_url_download(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
+    def _enable_url_download(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
         @functools.wraps(func)
         def wrapper_download(*args: Any, **kwargs: Any) -> Any:
             # Get path to file
@@ -26,7 +26,9 @@ def enable_url_download(path_arg_name: Optional[str] = None) -> Callable[[Any], 
                         f"Filename was not found in args or kwargs ({path_arg_name}!"
                     )
             # Check if download is needed and download
-            if str(path).startswith("http"):  # Download from URL and run function
+            if (str(path).startswith("http://")) or (
+                str(path).startswith("https://")
+            ):  # Download from URL and run function
                 with tempfile.NamedTemporaryFile() as temp_file:
                     download_file_from_url(
                         str(path), temp_file.name
@@ -43,4 +45,4 @@ def enable_url_download(path_arg_name: Optional[str] = None) -> Callable[[Any], 
 
         return wrapper_download
 
-    return enable_url_download
+    return _enable_url_download

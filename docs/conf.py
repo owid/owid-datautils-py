@@ -22,7 +22,7 @@ copyright = "2022, Our World In Data"
 author = "Our World In Data"
 
 # The full version, including alpha/beta/rc tags
-release = "0.4.14"
+release = "0.4.15"
 
 
 # -- General configuration ---------------------------------------------------

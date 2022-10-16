@@ -39,9 +39,9 @@ def enable_file_download(path_arg_name: Optional[str] = None) -> Callable[[Any],
                     else:
                         kwargs[path_arg_name] = temp_file.name  # type: ignore
                     # Call function
-                    return func(*args, **kwargs)  # type: ignore
+                    return func(*args, **kwargs)
             else:  # Run function on local file
-                return func(*args, **kwargs)  # type: ignore
+                return func(*args, **kwargs)
 
         return wrapper_download
 

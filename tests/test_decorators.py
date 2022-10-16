@@ -52,6 +52,14 @@ class TestEnableDownload:
         func = enable_file_download(path_arg_name="path")(_test_local_file)
         func("https://example.com/file.json")
 
+    @mock.patch(
+        "owid.datautils.s3.S3.download_from_s3",
+        return_value=None,
+    )
+    def test_download_s3_args(self, mock_download):
+        func = enable_file_download(path_arg_name="path")(_test_local_file)
+        func("s3://example.com/file.json")
+
 
 def _test_local_file(path):
     with open(path, "r") as f:

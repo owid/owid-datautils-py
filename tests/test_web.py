@@ -2,13 +2,11 @@
 
 """
 
-import json
-from typing import Any, List
 
 from pytest import warns
 from unittest import mock
 
-from owid.datautils.io.local import load_json
+from owid.datautils.io.json import load_json
 from owid.datautils.web import download_file_from_url, get_base_url
 from .mocks import MockResponse
 

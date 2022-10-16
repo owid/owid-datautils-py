@@ -5,7 +5,7 @@
 from pytest import warns
 from unittest.mock import patch, mock_open
 
-from owid.datautils.io.local import load_json, save_json
+from owid.datautils.io.json import load_json, save_json
 
 
 class TestLoadJson:

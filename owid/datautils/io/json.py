@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Hashable, List, Tuple, Union
 
 from owid.datautils.common import warn_on_list_of_entities
+from owid.datautils.decorators import enable_file_download
 
 
 def _load_json_data_and_duplicated_keys(
@@ -26,6 +27,7 @@ def _load_json_data_and_duplicated_keys(
     return clean_dict
 
 
+@enable_file_download(path_arg_name="json_file")
 def load_json(json_file: Union[str, Path], warn_on_duplicated_keys: bool = True) -> Any:
     """Load data from json file, and optionally warn if there are duplicated keys.
 

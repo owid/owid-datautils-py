@@ -19,6 +19,7 @@ structlog = "^21.5.0"
 colorama = "^0.4.4"
 mypy-boto3-s3 = "^1.21.23"
 owid-catalog = "^0.3.2"
+openpyxl = "^3.0.10"
 
 
 [tool.poetry.dev-dependencies]

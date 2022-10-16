@@ -2,7 +2,7 @@
 from unittest import mock
 import boto3
 
-from owid.datautils.io import s3
+from owid.datautils import s3
 
 
 def test_s3_path_to_bucket_key():
@@ -61,7 +61,7 @@ def test_list_files_in_folder(connect_mock):
     assert obj_list == ["test.csv", "test_2.csv"]
 
 
-@mock.patch("owid.datautils.io.s3.check_for_aws_profile", return_value=None)
+@mock.patch("owid.datautils.s3.check_for_aws_profile", return_value=None)
 @mock.patch.object(boto3.Session, "__init__", return_value=None)
 @mock.patch.object(boto3.Session, "client", return_value="client")
 def test_connect(check_mocker, session_mocker_1, session_mocker_2):

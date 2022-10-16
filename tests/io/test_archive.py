@@ -54,12 +54,8 @@ class TestDecompressTarBz2File:
 
 class TestDecompressWrongFile:
     def test_decompress_file_with_content_wrong(self, tmp_path):
-        with tempfile.TemporaryFile() as f:
-            with raises(ValueError):
-                decompress_file(
-                    input_file=f,
-                    output_folder="./",
-                )
+        with raises(ValueError):
+            _test_raise_error_if_file_exists(tmp_path, ".error")
 
 
 def _test_decompress_file_with_content(containing_dir: str, f: str) -> None:

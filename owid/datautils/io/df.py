@@ -4,8 +4,8 @@ from owid.datautils.decorators import enable_file_download
 from typing import Any
 
 
-@enable_file_download("path_or_url")
-def read_csv(path_or_url: str, **kwargs: Any) -> pd.DataFrame:
+@enable_file_download("filepath")
+def read_csv(filepath: str, **kwargs: Any) -> pd.DataFrame:
     """Read a CSV.
 
     It uses standard pandas function pandas.read_csv but adds the ability to read from a URL in some cases where
@@ -13,9 +13,9 @@ def read_csv(path_or_url: str, **kwargs: Any) -> pd.DataFrame:
 
     Parameters
     ----------
-    path_or_url : str
+    filepath : str
         Path or url to file.
-    kwargs : _type_
+    kwargs :
         pandas.read_csv arguments.
 
     Returns
@@ -23,12 +23,12 @@ def read_csv(path_or_url: str, **kwargs: Any) -> pd.DataFrame:
     pandas.DataFrame:
         Read dataframe.
     """
-    df: pd.DataFrame = pd.read_csv(path_or_url, **kwargs)
+    df: pd.DataFrame = pd.read_csv(filepath, **kwargs)
     return df
 
 
-@enable_file_download("path_or_url")
-def read_excel(path_or_url: str, **kwargs: Any) -> pd.DataFrame:
+@enable_file_download("filepath")
+def read_excel(filepath: str, **kwargs: Any) -> pd.DataFrame:
     """Read an excel file (xlsx or xls).
 
     It uses standard pandas function pandas.read_excel but adds the ability to read from a URL in some cases where
@@ -36,15 +36,15 @@ def read_excel(path_or_url: str, **kwargs: Any) -> pd.DataFrame:
 
     Parameters
     ----------
-    path_or_url : str
+    filepath : str
         Path or url to file.
-    kwargs : _type_
-        pandas.read_csv arguments.
+    kwargs :
+        pandas.read_excel arguments.
 
     Returns
     -------
     pandas.DataFrame:
         Read dataframe.
     """
-    df: pd.DataFrame = pd.read_excel(path_or_url, **kwargs)
+    df: pd.DataFrame = pd.read_excel(filepath, **kwargs)
     return df

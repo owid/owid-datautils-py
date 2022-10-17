@@ -10,6 +10,8 @@ from unittest import mock
 
 from owid.datautils.io.local import load_json
 from owid.datautils.web import download_file_from_url, get_base_url
+from .mocks import MockResponse
+
 
 # Mock URLs and responses.
 MOCK_URL_1 = "http://owid_example.com/test.json"
@@ -77,17 +79,6 @@ class TestGetBaseUrl:
                 == "example.com.au"
             )
             assert get_base_url("bad_url", include_scheme=False) == "bad_url"
-
-
-# Mock response.
-class MockResponse:
-    def __init__(self, json_data: Any, status_code: int):
-        self.json_data = json_data
-        self.status_code = status_code
-
-    def iter_content(self, chunk_size: int) -> List[bytes]:
-        _ = chunk_size
-        return [json.dumps(self.json_data).encode()]
 
 
 # Mock function to replace requests.get.

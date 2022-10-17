@@ -11,7 +11,7 @@ import pandas as pd
 
 from owid.datautils.common import ExceptionFromDocstring, warn_on_list_of_entities
 from owid.datautils.dataframes import groupby_agg, map_series
-from owid.datautils.io.local import load_json
+from owid.datautils.io.json import load_json
 
 # When creating region aggregates for a certain variable in a certain year, some mandatory countries must be
 # informed, otherwise the aggregate will be nan (since we consider that there is not enough information).

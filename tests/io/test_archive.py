@@ -4,10 +4,6 @@ from pathlib import Path
 from typing import Union
 from owid.datautils.io.archive import decompress_file
 from pytest import raises
-import tempfile
-
-
-FORMATS = [".tar.bz2"]
 
 
 class TestDecompressZipFile:

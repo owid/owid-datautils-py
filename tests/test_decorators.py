@@ -42,7 +42,7 @@ class TestEnableDownload:
     )
     def test_download_kwargs(self, mock_download, mog_session_get):
         func = enable_file_download(path_arg_name="path")(_test_local_file)
-        func(path="https://example.com/file.json")
+        func(path="http://example.ourworldindata.org/test.json")
 
     @mock.patch("owid.datautils.web.download_file_from_url", return_value=None)
     @mock.patch(
@@ -50,7 +50,7 @@ class TestEnableDownload:
     )
     def test_download_args(self, mock_download, mog_session_get):
         func = enable_file_download(path_arg_name="path")(_test_local_file)
-        func("https://example.com/file.json")
+        func("http://example.ourworldindata.org/test.json")
 
 
 def _test_local_file(path):

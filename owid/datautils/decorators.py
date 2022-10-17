@@ -18,7 +18,10 @@ def enable_file_download(path_arg_name: Optional[str] = None) -> Callable[[Any],
         ),
         "s3": ("s3://",),
     }
-    prefixes_flat = tuple(vv for v in prefixes.values() for vv in v)
+    # Get list of prefixes as a flat tuple
+    prefixes_flat = tuple(
+        prefix for prefixes_list in prefixes.values() for prefix in prefixes_list
+    )
 
     def _enable_file_download(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
         @functools.wraps(func)

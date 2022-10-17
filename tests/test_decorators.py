@@ -56,7 +56,11 @@ class TestEnableDownload:
         "owid.datautils.s3.S3.download_from_s3",
         return_value=None,
     )
-    def test_download_s3_args(self, mock_download):
+    @mock.patch(
+        "owid.datautils.s3.check_for_aws_profile",
+        return_value=None,
+    )
+    def test_download_s3_args(self, mock_download, mock_check_s3):
         func = enable_file_download(path_arg_name="path")(_test_local_file)
         func("s3://example.com/file.json")
 

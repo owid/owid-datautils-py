@@ -43,7 +43,7 @@ class TestGSheetsApi:
     clients_secrets = "a"
     credentials_path = "b"
     ss_id = "ss_id"
-    ws_id = "ws_id"
+    ws_id = 1
 
     def test_init(self, mock_init):
         api = GSheetsApi(self.clients_secrets, self.credentials_path)

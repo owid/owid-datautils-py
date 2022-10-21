@@ -1,5 +1,7 @@
+"""Google Sheet utils."""
 import os
 from gsheets import Sheets
+from gsheets.models import SpreadSheet, WorkSheet
 
 from owid.datautils.google.config import CLIENT_SECRETS_PATH, CREDENTIALS_PATH
 
@@ -12,28 +14,28 @@ class GSheetApi:
     def __init__(
         self,
         clients_secrets: str = CLIENT_SECRETS_PATH,
-        credentials: str = CREDENTIALS_PATH,
+        credentials_path: str = CREDENTIALS_PATH,
     ) -> None:
         self.clients_secrets = clients_secrets
-        self.credentials = credentials
-        self._init_config_folder(credentials=credentials)
+        self.credentials_path = credentials_path
+        self._init_config_folder()
         self.__sheets = None
 
     @property
-    def sheets(self):
+    def sheets(self) -> Sheets:
         """Access or initialize sheets attribute."""
         if self.__sheets is None:
             self.__sheets = Sheets.from_files(
-                self.clients_secrets, self.credentials, no_webserver=True
+                self.clients_secrets, self.credentials_path, no_webserver=True
             )
         return self.__sheets
 
-    def _init_config_folder(self, credentials):
-        credentials_folder = os.path.expanduser(os.path.dirname(credentials))
+    def _init_config_folder(self) -> None:
+        credentials_folder = os.path.expanduser(os.path.dirname(self.credentials_path))
         if not os.path.isdir(credentials_folder):
             os.makedirs(credentials_folder, exist_ok=True)
 
-    def get_sheet(self, sheet_id: str):
+    def get_sheet(self, sheet_id: str) -> SpreadSheet:
         """Get entire Google sheet.
 
         Parameters
@@ -43,15 +45,15 @@ class GSheetApi:
 
         Returns
         -------
-        _type_
-            _description_
+        SpreadSheet
+            SpreadSheet with given `sheet_id`.
         """
         return self.sheets.get(sheet_id)
 
-    def get_worksheet(self, sheet_id: str, worksheet_title: str):
+    def get_worksheet(self, sheet_id: str, worksheet_title: str) -> WorkSheet:
         """Get a worksheet from a Google sheet.
 
-         Parameters
+        Parameters
         ----------
         sheet_id : str
             ID of the sheet.
@@ -60,8 +62,8 @@ class GSheetApi:
 
         Returns
         -------
-        _type_
-            _description_
+        WorkSheet
+            Worksheet from sheet with id `sheet_id` and tab title `worksheet_title`.
         """
         sheet = self.sheets.get(sheet_id)
         try:

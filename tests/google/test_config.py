@@ -14,11 +14,6 @@ some_error_mock = mock.Mock()
 some_error_mock.side_effect = FileNotFoundError
 
 
-class MockGoogleAuth:
-    def CommandLineAuth(self):
-        return None
-
-
 @mock.patch("owid.datautils.google.config._check_google_config", some_error_mock)
 def test_google_config_is_init_false():
     assert not is_google_config_init()
@@ -89,8 +84,8 @@ def test_google_config_init_error():
 @mock.patch.object(pydrive.auth.GoogleAuth, "CommandLineAuth", return_value=None)
 def test_google_config_init_1(mocker_google_1, mocker_google_2):
     # with tempfile.TemporaryDirectory() as config_dir:
-    config_dir = next(tempfile._get_candidate_names())
-    defult_tmp_dir = tempfile._get_default_tempdir()
+    config_dir = next(tempfile._get_candidate_names())  # type: ignore
+    defult_tmp_dir = tempfile._get_default_tempdir()  # type: ignore
     config_dir = os.path.join(defult_tmp_dir, config_dir)
     with mock.patch("owid.datautils.google.config.CONFIG_DIR", config_dir), mock.patch(
         "owid.datautils.google.config.CLIENT_SECRETS_PATH",

@@ -63,10 +63,20 @@ def test_check_google_config_2():
 
 def test_check_google_config_3():
     """Folder created, files not created"""
-    with raises(FileNotFoundError):
-        with tempfile.TemporaryDirectory() as config_dir:
-            with mock.patch("owid.datautils.google.config.CONFIG_DIR", config_dir):
-                _check_google_config()
+    with raises(FileNotFoundError), tempfile.TemporaryDirectory() as config_dir:
+        with mock.patch(
+            "owid.datautils.google.config.CONFIG_DIR", config_dir
+        ), mock.patch(
+            "owid.datautils.google.config.CLIENT_SECRETS_PATH",
+            Path(config_dir) / "google_client_secrets.json",
+        ) as _, mock.patch(
+            "owid.datautils.google.config.SETTINGS_PATH",
+            Path(config_dir) / "google_settings.yaml",
+        ) as _, mock.patch(
+            "owid.datautils.google.config.CREDENTIALS_PATH",
+            Path(config_dir) / "google_credentials.json",
+        ) as _:
+            _check_google_config()
 
 
 def test_google_config_init_error():

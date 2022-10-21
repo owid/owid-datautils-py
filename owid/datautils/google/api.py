@@ -1,5 +1,5 @@
 """Google API class."""
-from owid.datautils.google.sheets import GSheetApi
+from owid.datautils.google.sheets import GSheetsApi
 from owid.datautils.google.config import (
     CLIENT_SECRETS_PATH,
     CREDENTIALS_PATH,
@@ -8,6 +8,7 @@ from owid.datautils.google.config import (
     is_google_config_init,
 )
 import gdown
+from pydrive.files import GoogleDriveFileList
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from typing import Optional, Any
@@ -50,7 +51,7 @@ class GoogleApi:
             else:
                 google_config_init(clients_secrets_file)
 
-        self.sheets = GSheetApi(CLIENT_SECRETS_PATH, CREDENTIALS_PATH)
+        self.sheets = GSheetsApi(CLIENT_SECRETS_PATH, CREDENTIALS_PATH)
 
     @classmethod
     def download_folder(
@@ -117,21 +118,20 @@ class GoogleApi:
         drive = GoogleDrive(gauth)
         return drive
 
-    # def list_files(self, parent_id: str):
-    #     """List files in a Google Drive folder.
+    def list_files(self, parent_id: str) -> GoogleDriveFileList:
+        """List files in a Google Drive folder.
 
-    #     Parameters
-    #     ----------
-    #     parent_id : str
-    #         Google Drive folder ID.
+        Parameters
+        ----------
+        parent_id : str
+            Google Drive folder ID.
 
-    #     Returns
-    #     -------
-    #     List
-    #         Files
-    #     """
-    #     drive = self.drive
-    #     request = f"'{parent_id}' in parents and trashed=false"
-    #     # Get list of files
-    #     files = drive.ListFile({"q": request}).GetList()
-    #     return files
+        Returns
+        -------
+        List
+            Files
+        """
+        request = f"'{parent_id}' in parents and trashed=false"
+        # Get list of files
+        files = self.drive.ListFile({"q": request}).GetList()
+        return files

@@ -136,3 +136,6 @@ dmypy.json
 
 # reports (coverage, linting)
 .reports/
+
+# Google
+client_secret*

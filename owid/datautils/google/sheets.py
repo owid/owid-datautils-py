@@ -36,7 +36,7 @@ class GSheetsApi:
             os.makedirs(credentials_folder, exist_ok=True)
 
     def get(
-        self, spreadsheet_id: str, worksheet_id: Optional[str] = None
+        self, spreadsheet_id: str, worksheet_id: Optional[int] = None
     ) -> Union[SpreadSheet, WorkSheet]:
         """Get a spreadsheet or worksheet from a Google sheet.
 
@@ -47,7 +47,7 @@ class GSheetsApi:
         ----------
         spreadsheet_id : str
             ID of the spreadsheet.
-        worksheet_title : str
+        worksheet_id : int
             ID of the worksheet.
 
         Returns
@@ -63,7 +63,7 @@ class GSheetsApi:
     def download_worksheet(
         self,
         spreadsheet_id: str,
-        worksheet_id: str,
+        worksheet_id: int,
         output_path: Optional[str] = None,
         encoding: str = "utf-8",
         **kwargs: Any
@@ -119,7 +119,7 @@ class GSheetsApi:
         make_filename = os.path.join(output_dir, "%(title)s - %(sheet)s.csv")
         sheet.to_csv(make_filename=make_filename, encoding=encoding, **kwargs)
 
-    def worksheet_to_df(self, spreadsheet_id: str, worksheet_id: str) -> pd.DataFrame:
+    def worksheet_to_df(self, spreadsheet_id: str, worksheet_id: int) -> pd.DataFrame:
         """Load a Worksheet as a dataframe.
 
         Parameters

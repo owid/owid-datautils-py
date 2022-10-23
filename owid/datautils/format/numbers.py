@@ -227,7 +227,7 @@ class NumberWithWords:
             True if number contains numeric valid words.
         """
         # return any(word in number for word in cls.numeric_words_list())
-        return re.fullmatch(cls.regex_number_verbose(), number)
+        return bool(re.fullmatch(cls.regex_number_verbose(), number))
 
     def clean(self) -> int:
         """Clean number.

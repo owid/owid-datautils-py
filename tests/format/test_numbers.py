@@ -163,7 +163,7 @@ class TestNumberWithWords:
             },
         }
         for number, number_dix in number_equivalences.items():
-            number_ = NumberWithWords._build_number(number_dix)
+            number_ = NumberWithWords._build_number(number_dix)  # type: ignore
             assert number == number_
 
 
@@ -190,7 +190,7 @@ class TestNumber:
             "2  cientos": 200,
         }
         for number_raw, number_corrected in numbers.items():
-            number = Number(number_raw)
+            number = Number(number_raw)  # type: ignore
             assert number_corrected == number.clean()
 
     def test_clean_wrong(self):

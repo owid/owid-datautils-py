@@ -3,8 +3,8 @@ import re
 from typing import Union, Any, Dict, Set
 
 
-class Number:
-    """Wrapper around numbers."""
+class IntegerNumber:
+    """Wrapper around integer numbers."""
 
     def __init__(self, number: Union[str, int]) -> None:
         self.number_raw = number
@@ -34,15 +34,15 @@ class Number:
         """Clean number."""
         if self.number.isnumeric():  # already a number
             return int(self.number)
-        elif NumberWithWords.is_valid(self.number):  # contains words
-            return NumberWithWords(self.number).clean()
-        elif NumberWithSeparators.is_valid(self.number):  # has zero-separator
-            return NumberWithSeparators(self.number).clean()
+        elif IntegerNumberWithWords.is_valid(self.number):  # contains words
+            return IntegerNumberWithWords(self.number).clean()
+        elif IntegerNumberWithSeparators.is_valid(self.number):  # has zero-separator
+            return IntegerNumberWithSeparators(self.number).clean()
         else:  # error
             raise ValueError(f"Invalid number format {self.number}")
 
 
-class NumberWithSeparators:
+class IntegerNumberWithSeparators:
     """Class for numbers with separators.
 
     Accepted separators are: '.', ',' and ' '.
@@ -97,7 +97,7 @@ class NumberWithSeparators:
         raise ValueError(f"Given number {self.number_raw} is not valid!")
 
 
-class NumberWithWords:
+class IntegerNumberWithWords:
     """Class for numbers with words.
 
     Words suported can be found in class attribute `numeric_words`.
@@ -205,7 +205,7 @@ class NumberWithWords:
             raise ValueError("Number may not contain numeric words. Please review!")
 
     @classmethod
-    def _build_number(cls, numbers: Dict[str, Union[str, int]]) -> int:
+    def _build_IntegerNumber(cls, numbers: Dict[str, Union[str, int]]) -> int:
         """Build number from dictionary."""
         value = 0
         for k, v in numbers.items():
@@ -239,7 +239,7 @@ class NumberWithWords:
         """
         if self.is_valid(self.number_raw):
             number_dix = self._match_numeric_words()
-            number = self._build_number(number_dix)
+            number = self._build_IntegerNumber(number_dix)
             return number
         raise ValueError(f"Given number {self.number_raw} is not valid!")
 
@@ -301,5 +301,5 @@ def format_number(number: Union[int, str]) -> int:
     int
         Formatted number.
     """
-    number_ = Number(number)
+    number_ = IntegerNumber(number)
     return number_.clean()

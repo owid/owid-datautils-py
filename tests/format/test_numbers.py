@@ -1,7 +1,7 @@
 from owid.datautils.format.numbers import (
-    Number,
-    NumberWithSeparators,
-    NumberWithWords,
+    IntegerNumber,
+    IntegerNumberWithSeparators,
+    IntegerNumberWithWords,
     num_to_str,
     remove_multiple_whitespaces,
     format_number,
@@ -9,60 +9,60 @@ from owid.datautils.format.numbers import (
 from pytest import raises
 
 
-class TestNumberWithSeparators:
+class TestIntegerNumberWithSeparators:
     separators = [",", ".", " "]
     numbers_valid = ["1,000,000", "1,234", "123,032", "21,000,100,231"]
     numbers_valid_corrected = [1000000, 1234, 123032, 21000100231]
     numbers_wrong = ["1,", "1,0", "2,01", "1234,000"]
 
     def test_init(self):
-        number = NumberWithSeparators("2,000")
+        number = IntegerNumberWithSeparators("2,000")
         assert number.number_raw == "2,000"
         assert isinstance(number.number_raw, str)
 
     def test_is_valid_ok(self):
         for num in self.numbers_valid:
             for sep in self.separators:
-                assert NumberWithSeparators.is_valid(num.replace(",", sep))
+                assert IntegerNumberWithSeparators.is_valid(num.replace(",", sep))
 
     def test_is_valid_wrong(self):
         for num in self.numbers_wrong:
             for sep in self.separators:
-                assert not NumberWithSeparators.is_valid(num.replace(",", sep))
+                assert not IntegerNumberWithSeparators.is_valid(num.replace(",", sep))
         # Others
-        assert not NumberWithSeparators.is_valid("1.000,213")
-        assert not NumberWithSeparators.is_valid("1.000 213")
-        assert not NumberWithSeparators.is_valid("1")
-        assert not NumberWithSeparators.is_valid("hola")
+        assert not IntegerNumberWithSeparators.is_valid("1.000,213")
+        assert not IntegerNumberWithSeparators.is_valid("1.000 213")
+        assert not IntegerNumberWithSeparators.is_valid("1")
+        assert not IntegerNumberWithSeparators.is_valid("hola")
 
         with raises(TypeError):
-            assert not NumberWithSeparators.is_valid(1)  # type: ignore
+            assert not IntegerNumberWithSeparators.is_valid(1)  # type: ignore
         with raises(TypeError):
-            assert not NumberWithSeparators.is_valid(1.000)  # type: ignore
+            assert not IntegerNumberWithSeparators.is_valid(1.000)  # type: ignore
 
     def test_clean_ok(self):
         for num, num_cor in zip(self.numbers_valid, self.numbers_valid_corrected):
-            number = NumberWithSeparators(num).clean()
+            number = IntegerNumberWithSeparators(num).clean()
             assert number == num_cor
 
     def test_clean_wrong(self):
         for num in self.numbers_wrong:
             with raises(ValueError):
-                _ = NumberWithSeparators(num).clean()
+                _ = IntegerNumberWithSeparators(num).clean()
 
 
-class TestNumberWithWords:
+class TestIntegerNumberWithWords:
     def test_init(self):
-        number = NumberWithWords("2 million")
+        number = IntegerNumberWithWords("2 million")
         assert number.number_raw == "2 million"
         assert isinstance(number.number_raw, str)
 
     def test_regex_number_verbose(self):
-        regex = NumberWithWords.regex_number_verbose()
+        regex = IntegerNumberWithWords.regex_number_verbose()
         assert isinstance(regex, str)
 
     def test_numeric_words_list(self):
-        words = NumberWithWords.numeric_words_list()
+        words = IntegerNumberWithWords.numeric_words_list()
         assert isinstance(words, set)
         assert all([isinstance(word, str) for word in words])
 
@@ -105,7 +105,7 @@ class TestNumberWithWords:
             },
         }
         for number_str, number_dix in numbers.items():
-            number = NumberWithWords(number_str)
+            number = IntegerNumberWithWords(number_str)
             dix = number._match_numeric_words()
             assert isinstance(dix, dict)
             assert dix == number_dix
@@ -113,7 +113,7 @@ class TestNumberWithWords:
     def test_match_numeric_words_wrong(self):
         numbers = ["hello", "trillion", "hundred"]
         for number_str in numbers:
-            number = NumberWithWords(number_str)
+            number = IntegerNumberWithWords(number_str)
             dix = number._match_numeric_words()
             assert isinstance(dix, dict)
             assert dix == {
@@ -124,7 +124,7 @@ class TestNumberWithWords:
                 "one": 0,
             }
 
-    def test_build_number(self):
+    def test_build_IntegerNumber(self):
         number_equivalences = {
             0: {
                 "million": 0,
@@ -163,18 +163,18 @@ class TestNumberWithWords:
             },
         }
         for number, number_dix in number_equivalences.items():
-            number_ = NumberWithWords._build_number(number_dix)  # type: ignore
+            number_ = IntegerNumberWithWords._build_IntegerNumber(number_dix)  # type: ignore
             assert number == number_
 
 
 class TestNumber:
     def test_init(self):
-        number = Number(1)
+        number = IntegerNumber(1)
         assert number.number_raw == 1
         assert number.number == "1"
 
     def test_init_clean(self):
-        assert "1 000" == Number.init_clean("1  000")
+        assert "1 000" == IntegerNumber.init_clean("1  000")
 
     def test_clean_correct(self):
         numbers = {
@@ -190,7 +190,7 @@ class TestNumber:
             "2  cientos": 200,
         }
         for number_raw, number_corrected in numbers.items():
-            number = Number(number_raw)  # type: ignore
+            number = IntegerNumber(number_raw)  # type: ignore
             assert number_corrected == number.clean()
 
     def test_clean_wrong(self):
@@ -202,7 +202,7 @@ class TestNumber:
             "1 a",
         ]
         for num in numbers:
-            number = Number(num)
+            number = IntegerNumber(num)
             with raises(ValueError):
                 number.clean()
 
@@ -216,5 +216,5 @@ def test_remove_multiple_whitespaces():
     assert "1 million" == remove_multiple_whitespaces("1  million")
 
 
-def test_format_number():
+def test_format_IntegerNumber():
     assert 100 == format_number("100")

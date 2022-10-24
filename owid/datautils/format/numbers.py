@@ -168,6 +168,12 @@ class IntegerNumberWithWords:
 
     def __init__(self, number_raw: str) -> None:
         self.number_raw = number_raw
+        self.number = self.init_clean(number_raw)
+
+    @classmethod
+    def init_clean(cls, number_raw: str) -> str:
+        """Clean raw number."""
+        return number_raw.replace(" and ", " ")
 
     @classmethod
     def regex_number_verbose(cls) -> str:
@@ -197,7 +203,7 @@ class IntegerNumberWithWords:
 
     def _match_numeric_words(self) -> Dict[str, Union[str, int]]:
         """Match number with words."""
-        match = re.search(self.regex_number_verbose(), self.number_raw)
+        match = re.search(self.regex_number_verbose(), self.number)
         if match:
             numbers = match.groupdict(default=0)
             return numbers

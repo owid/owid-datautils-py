@@ -75,7 +75,7 @@ class TestIntegerNumberWithWords:
                 "hundred": 0,
                 "one": 0,
             },
-            "2 million 1": {
+            "2 million and 1": {
                 "million": "2",
                 "ten_thousand": 0,
                 "thousand": 0,

@@ -12,7 +12,7 @@ COMPRESSION_SUPPORTED = ["gz", "bz2", "zip", "xz", "zst", "tar"]
 def from_file(
     file_path: Union[str, Path], file_type: Optional[str] = None, **kwargs: Any
 ) -> Union[pd.DataFrame, List[pd.DataFrame]]:
-    """Loads a file as a pandas DataFrame.
+    """Load a file as a pandas DataFrame.
 
     It uses standard pandas function pandas.read_* but adds the ability to read from a URL in some
     cases where pandas does not work.
@@ -73,7 +73,7 @@ def from_file(
         "xlsx": pd.read_excel,
         "xml": pd.read_xml,
     }
-    if extension not in output_methods:
+    if extension not in input_methods:
         raise ValueError(
             "Failed reading dataframe because of an unknown file extension:"
             f" {extension}"

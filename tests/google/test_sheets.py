@@ -51,10 +51,10 @@ class TestGSheetsApi:
         assert api.credentials_path == self.credentials_path
 
     @mock.patch("gsheets.Sheets.from_files", side_effect=MockSheets.from_files)
-    def test_sheets(self, mock_init, mock_sheets):
+    def test_sheets(self, mock_init, mock_sheets_from_files):
         api = GSheetsApi(self.clients_secrets, self.credentials_path)
         _ = api.sheets
-        # assert api.sheets == 1
+        assert api.sheets.name == "hello"
 
     @mock.patch("gsheets.Sheets.from_files", side_effect=MockSheets.from_files)
     @mock.patch("gsheets.Sheets.get", side_effect=MockSheets.get)

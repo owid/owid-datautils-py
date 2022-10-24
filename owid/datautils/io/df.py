@@ -12,13 +12,13 @@ COMPRESSION_SUPPORTED = ["gz", "bz2", "zip", "xz", "zst", "tar"]
 def from_file(
     file_path: Union[str, Path], file_type: Optional[str] = None, **kwargs: Any
 ) -> Union[pd.DataFrame, List[pd.DataFrame]]:
-    """Read a CSV or excel file.
+    """Loads a file as a pandas DataFrame.
 
     It uses standard pandas function pandas.read_* but adds the ability to read from a URL in some
     cases where pandas does not work.
 
     The function will infer the extension of `file_path` by simply taking what follows the last ".". For example:
-    "file.csv" will have an extension ".csv"; "http://my/domain/file.xlsx" will have an extension "xlsx".
+    "file.csv" will be read as a csv file, and "http://my/domain/file.xlsx" will be read as an excel file.
 
     Reading from compressed files will not work by default, unless you provide a `file_type`.
 
@@ -27,8 +27,10 @@ def from_file(
     filepath : str
         Path or url to file.
     file_type : str
-        File type. For instance, if reading from a zip-compressed file that originally was a CSV,
-         `file_type` should be "csv". Reading from compressed files is supported for "csv", "dta" and "json".
+        File type of the data file. By default is None, as it is only required when reading compressed files.
+        This is typically equivalent to the file extension. However, when reading a
+        compressed file, this refers to the actual file that is compressed (not the compressed file extension).
+        Reading from compressed files is supported for "csv", "dta" and "json".
     kwargs :
         pandas.read_* arguments.
 
@@ -57,8 +59,8 @@ def from_file(
     if not file_path.exists():
         raise FileNotFoundError(f"Cannot find file: {file_path}")
 
-    # Available output methods (some of them may need additional dependencies to work).
-    output_methods = {
+    # Available input methods (some of them may need additional dependencies to work).
+    input_methods = {
         "csv": pd.read_csv,
         "dta": pd.read_stata,
         "feather": pd.read_feather,
@@ -76,8 +78,8 @@ def from_file(
             "Failed reading dataframe because of an unknown file extension:"
             f" {extension}"
         )
-    # Select the appropriate storing method.
-    read_function = output_methods[extension]
+    # Select the appropriate reading method.
+    read_function = input_methods[extension]
 
     # Load file using the chosen read function and the appropriate arguments.
     df: pd.DataFrame = read_function(file_path, **kwargs)

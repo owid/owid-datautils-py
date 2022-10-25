@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 import numpy as np
 import pandas as pd
 from pandas.api.types import union_categoricals
-from owid.datautils.io.df import to_file as to_file_, has_index as has_index_
+from owid.datautils.io.df import to_file as to_file_
 
 from owid.datautils.common import ExceptionFromDocstring, warn_on_list_of_entities
 
@@ -26,18 +26,26 @@ def to_file(*args: Any, **kwargs: Any) -> None:
     to_file_(*args, **kwargs)
 
 
-def has_index(*args: Any, **kwargs: Any) -> bool:
-    """Save a dataframe in any format.
+def has_index(df: pd.DataFrame) -> bool:
+    """Return True if a dataframe has an index, and False if it does not (i.e. if it has a dummy index).
 
-    Will be deprecated. Use owid.datautils.io.df.has_index instead.
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe whose index will be checked.
+
+    Returns
+    -------
+    df_has_index : bool
+        True if dataframe has a non-dummy (single- or multi-) index.
+
     """
-    warnings.warn(
-        "Call to deprecated class has_index (This function will be removed in the next"
-        " minor update, use owid.datautils.io.df.has_index instead.)",
-        category=DeprecationWarning,
-        stacklevel=2,
-    )
-    return has_index_(*args, **kwargs)
+    # Dataframes always have an attribute index.names, which is a frozen list.
+    # If the dataframe has no set index (i.e. if it has a dummy index), that list contains only [None].
+    # In any other case, the frozen list contains one or more elements different than None.
+    df_has_index = True if df.index.names[0] is not None else False
+
+    return df_has_index
 
 
 class DataFramesHaveDifferentLengths(ExceptionFromDocstring):

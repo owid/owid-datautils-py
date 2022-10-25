@@ -1,7 +1,9 @@
 """DataFrame io operations."""
 import inspect
 from pathlib import Path
+
 import pandas as pd
+from owid.datautils.dataframes import has_index
 from owid.datautils.decorators import enable_file_download
 from typing import Any, Optional, Union, List
 
@@ -164,25 +166,3 @@ def to_file(
 
     # Save file using the chosen save function and the appropriate arguments.
     save_function(file_path, **kwargs)
-
-
-def has_index(df: pd.DataFrame) -> bool:
-    """Return True if a dataframe has an index, and False if it does not (i.e. if it has a dummy index).
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Dataframe whose index will be checked.
-
-    Returns
-    -------
-    df_has_index : bool
-        True if dataframe has a non-dummy (single- or multi-) index.
-
-    """
-    # Dataframes always have an attribute index.names, which is a frozen list.
-    # If the dataframe has no set index (i.e. if it has a dummy index), that list contains only [None].
-    # In any other case, the frozen list contains one or more elements different than None.
-    df_has_index = True if df.index.names[0] is not None else False
-
-    return df_has_index

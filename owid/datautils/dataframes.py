@@ -1,15 +1,43 @@
 """Objects related to pandas dataframes."""
 
-import inspect
 import warnings
-from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 
 import numpy as np
 import pandas as pd
 from pandas.api.types import union_categoricals
+from owid.datautils.io.df import to_file as to_file_, has_index as has_index_
 
 from owid.datautils.common import ExceptionFromDocstring, warn_on_list_of_entities
+
+
+# Backwards compatibility
+def to_file(*args: Any, **kwargs: Any) -> None:
+    """Save a dataframe in any format.
+
+    Will be deprecated. Use owid.datautils.io.df.to_file instead.
+    """
+    warnings.warn(
+        "Call to deprecated class to_file (This function will be removed in the next"
+        " minor update, use owid.datautils.io.df.to_file instead.)",
+        category=DeprecationWarning,
+        stacklevel=2,
+    )
+    to_file_(*args, **kwargs)
+
+
+def has_index(*args: Any, **kwargs: Any) -> bool:
+    """Save a dataframe in any format.
+
+    Will be deprecated. Use owid.datautils.io.df.has_index instead.
+    """
+    warnings.warn(
+        "Call to deprecated class has_index (This function will be removed in the next"
+        " minor update, use owid.datautils.io.df.has_index instead.)",
+        category=DeprecationWarning,
+        stacklevel=2,
+    )
+    return has_index_(*args, **kwargs)
 
 
 class DataFramesHaveDifferentLengths(ExceptionFromDocstring):
@@ -599,7 +627,8 @@ def combine_two_overlapping_dataframes(
         # Ensure dataframes have a dummy index.
         if not ((df1.index.names == [None]) and (df2.index.names == [None])):
             warnings.warn(
-                "If index_columns is given, dataframes should have a dummy index. Use reset_index()."
+                "If index_columns is given, dataframes should have a dummy index. Use"
+                " reset_index()."
             )
         # Set index columns.
         df1 = df1.set_index(index_columns)
@@ -633,104 +662,3 @@ def combine_two_overlapping_dataframes(
     # It would be good to have a 'keep_row_order' option, but it's a bit tricky.
 
     return cast(pd.DataFrame, combined)
-
-
-def has_index(df: pd.DataFrame) -> bool:
-    """Return True if a dataframe has an index, and False if it does not (i.e. if it has a dummy index).
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Dataframe whose index will be checked.
-
-    Returns
-    -------
-    df_has_index : bool
-        True if dataframe has a non-dummy (single- or multi-) index.
-
-    """
-    # Dataframes always have an attribute index.names, which is a frozen list.
-    # If the dataframe has no set index (i.e. if it has a dummy index), that list contains only [None].
-    # In any other case, the frozen list contains one or more elements different than None.
-    df_has_index = True if df.index.names[0] is not None else False
-
-    return df_has_index
-
-
-def to_file(
-    df: pd.DataFrame, file_path: Union[str, Path], overwrite: bool = True, **kwargs: Any
-) -> None:
-    """Save dataframe to file.
-
-    This function wraps all pandas df.to_* methods, e.g. df.to_csv() or df.to_parquet(), with the following advantages:
-    * The output file will have the format determined by the extension of file_path. Hence, to_file(df, "data.csv") will
-    create a csv file, and to_file(df, "data.parquet") will create a parquet file.
-    * If file_path is with one or more subfolders that do not exist, the full path will be created.
-    * It can overwrite an existing file (if overwrite is True), or raise an error if the file already exists.
-    * It will avoid creating an index column if the dataframe has a dummy index (which would be equivalent to doing
-    df.to_csv(file_path, index=False)), but it will include the index if the dataframe has one.
-    * Any additional keyword argument that would be passed on to the method to write a file can be safely added. For
-    example, to_file(df, "data.csv", na_rep="TEST") will replace missing data by "TEST" (analogous to
-    df.to_csv("data.csv", na_rep="TEST")).
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Dataframe to be stored in a file.
-    file_path : Union[str, Path]
-        Path to file to be created.
-    overwrite : bool, optional
-        True to overwrite file if it already exists. False to raise an error if file already exists.
-
-    """
-    # Ensure file_path is a Path object.
-    file_path = Path(file_path)
-
-    # Ensure extension is lower case and does not start with '.'.
-    extension = file_path.suffix.lstrip(".").lower()
-
-    # Ensure output directory exists.
-    if not file_path.parent.exists():
-        file_path.parent.mkdir(parents=True)
-
-    # Avoid overwriting an existing file unless explicitly stated.
-    if file_path.is_file() and not overwrite:
-        raise FileExistsError(
-            "Failed to save dataframe because file exists and 'overwrite' is False."
-        )
-
-    # Available output methods (some of them may need additional dependencies to work).
-    output_methods = {
-        "csv": df.to_csv,
-        "dta": df.to_stata,
-        "feather": df.to_feather,
-        "hdf": df.to_hdf,
-        "html": df.to_html,
-        "json": df.to_json,
-        "md": df.to_markdown,
-        "parquet": df.to_parquet,
-        "pickle": df.to_pickle,
-        "pkl": df.to_pickle,
-        "tex": df.to_latex,
-        "txt": df.to_string,
-        "xlsx": df.to_excel,
-        "xml": df.to_xml,
-    }
-    if extension not in output_methods:
-        raise ValueError(
-            f"Failed saving dataframe because of an unknown file extension: {extension}"
-        )
-    # Select the appropriate storing method.
-    save_function = output_methods[extension]
-
-    # Decide whether dataframe should be stored with or without an index, if:
-    # * The storing method allows for an 'index' argument.
-    # * The argument "index" is not explicitly given.
-    if ("index" in inspect.signature(save_function).parameters) and (
-        "index" not in kwargs
-    ):
-        # Make 'index' False to avoid storing index if dataframe has a dummy index.
-        kwargs["index"] = has_index(df=df)
-
-    # Save file using the chosen save function and the appropriate arguments.
-    save_function(file_path, **kwargs)

@@ -1,5 +1,5 @@
 # owid-datautils
-![version](https://img.shields.io/badge/version-0.4.15-blue)
+![version](https://img.shields.io/badge/version-0.5.0-blue)
 ![version](https://img.shields.io/badge/python-3.8|3.9|3.10-blue.svg?&logo=python&logoColor=yellow) [![codecov](https://codecov.io/gh/owid/owid-datautils-py/branch/main/graph/badge.svg?token=2emTQEJedw)](https://codecov.io/gh/owid/owid-datautils-py)
 [![Documentation Status](https://readthedocs.org/projects/owid-datautils/badge/?version=latest)](https://docs.owid.io/projects/owid-datautils/en/latest/?badge=latest)
 

@@ -21,6 +21,8 @@ mypy-boto3-s3 = "^1.21.23"
 owid-catalog = "^0.3.2"
 gdown = "^4.5.2"
 PyDrive = "^1.3.1"
+# setuptools is needed by PyDrive, but it is not listed as a dependency
+setuptools = "57.2.0"
 gsheets = "^0.6.1"
 
 

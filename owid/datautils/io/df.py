@@ -3,12 +3,18 @@ import inspect
 from pathlib import Path
 
 import pandas as pd
-from owid.datautils.dataframes import has_index
 from owid.datautils.decorators import enable_file_download
 from typing import Any, Optional, Union, List
 
 
 COMPRESSION_SUPPORTED = ["gz", "bz2", "zip", "xz", "zst", "tar"]
+
+
+def _has_index(df: pd.DataFrame) -> bool:
+    # Copy of dataframes.has_index to avoid circular imports.
+    df_has_index = True if df.index.names[0] is not None else False
+
+    return df_has_index
 
 
 @enable_file_download("file_path")
@@ -162,7 +168,7 @@ def to_file(
         "index" not in kwargs
     ):
         # Make 'index' False to avoid storing index if dataframe has a dummy index.
-        kwargs["index"] = has_index(df=df)
+        kwargs["index"] = _has_index(df=df)
 
     # Save file using the chosen save function and the appropriate arguments.
     save_function(file_path, **kwargs)

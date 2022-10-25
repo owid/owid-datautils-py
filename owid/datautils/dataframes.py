@@ -19,7 +19,7 @@ def to_file(*args: Any, **kwargs: Any) -> None:
     """
     warnings.warn(
         "Call to deprecated class to_file (This function will be removed in the next"
-        " minor update, use owid.datautils.io.df.to_file instead.)",
+        " minor update, use owid.datautils.io.df_to_file instead.)",
         category=DeprecationWarning,
         stacklevel=2,
     )

@@ -1,14 +1,16 @@
-from unittest import mock
 import os
-from pytest import raises
-from pathlib import Path
 import tempfile
+from pathlib import Path
+from unittest import mock
+
+import pydrive2
+from pytest import raises
+
 from owid.datautils.google.config import (
-    is_google_config_init,
     _check_google_config,
     google_config_init,
+    is_google_config_init,
 )
-import pydrive
 
 some_error_mock = mock.Mock()
 some_error_mock.side_effect = FileNotFoundError
@@ -80,8 +82,8 @@ def test_google_config_init_error():
         google_config_init(client_secrets_file)
 
 
-@mock.patch.object(pydrive.auth.GoogleAuth, "__init__", return_value=None)
-@mock.patch.object(pydrive.auth.GoogleAuth, "CommandLineAuth", return_value=None)
+@mock.patch.object(pydrive2.auth.GoogleAuth, "__init__", return_value=None)
+@mock.patch.object(pydrive2.auth.GoogleAuth, "CommandLineAuth", return_value=None)
 def test_google_config_init_1(mocker_google_1, mocker_google_2):
     # with tempfile.TemporaryDirectory() as config_dir:
     config_dir = next(tempfile._get_candidate_names())  # type: ignore

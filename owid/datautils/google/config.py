@@ -1,11 +1,11 @@
 """Google configuration functions."""
 import os
-import yaml
-
-from pydrive.auth import GoogleAuth
+from pathlib import Path
 from shutil import copyfile
 from typing import Union
-from pathlib import Path
+
+import yaml
+from pydrive2.auth import GoogleAuth
 
 # PATHS
 CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config", "owid")

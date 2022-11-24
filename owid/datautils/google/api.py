@@ -1,5 +1,11 @@
 """Google API class."""
-from owid.datautils.google.sheets import GSheetsApi
+from typing import Any, Optional
+
+import gdown
+from pydrive2.auth import GoogleAuth
+from pydrive2.drive import GoogleDrive
+from pydrive2.files import GoogleDriveFileList
+
 from owid.datautils.google.config import (
     CLIENT_SECRETS_PATH,
     CREDENTIALS_PATH,
@@ -7,11 +13,7 @@ from owid.datautils.google.config import (
     google_config_init,
     is_google_config_init,
 )
-import gdown
-from pydrive.files import GoogleDriveFileList
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
-from typing import Optional, Any
+from owid.datautils.google.sheets import GSheetsApi
 
 
 class GoogleApi:

@@ -6,6 +6,7 @@ from owid.datautils.web import download_file_from_url
 from owid.datautils.s3 import S3
 import tempfile
 from typing import Callable, Any, Optional
+from pathlib import Path
 
 
 def enable_file_download(path_arg_name: Optional[str] = None) -> Callable[[Any], Any]:
@@ -41,7 +42,8 @@ def enable_file_download(path_arg_name: Optional[str] = None) -> Callable[[Any],
             # Check if download is needed and download
             path = str(path)
             if path.startswith(prefixes_flat):  # Download from URL and run function
-                with tempfile.NamedTemporaryFile() as temp_file:
+                suffix = Path(path).suffix.lower()
+                with tempfile.NamedTemporaryFile(suffix=suffix) as temp_file:
                     # Download file from URL
                     if path.startswith(prefixes["url"]):
                         download_file_from_url(
